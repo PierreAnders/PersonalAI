@@ -12,11 +12,11 @@ from langchain.indexes.vectorstore import VectorStoreIndexWrapper
 from langchain.llms import OpenAI
 from langchain.vectorstores import Chroma
 from langchain.embeddings import OpenAIEmbeddings
+from dotenv import load_dotenv
 
-import constants
+load_dotenv()
 
-os.environ["OPENAI_API_KEY"] = constants.APIKEY
-
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app = Flask(__name__)
 swagger = Swagger(app)
