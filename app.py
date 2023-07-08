@@ -13,6 +13,7 @@ from langchain.llms import OpenAI
 from langchain.vectorstores import Chroma
 from langchain.embeddings import OpenAIEmbeddings
 from dotenv import load_dotenv
+from glob import glob
 
 load_dotenv()
 
@@ -30,14 +31,22 @@ if PERSIST and os.path.exists("persist"):
   vectorstore = Chroma(persist_directory="persist", embedding_function=OpenAIEmbeddings())
   index = VectorStoreIndexWrapper(vectorstore=vectorstore)
 else:
-  loader = DirectoryLoader("data/")
+  # Détecter tous les sous-dossiers dans le répertoire de données
+  subdirs = glob('data/*/')
+
+  loaders = []
+  for subdir in subdirs:
+      # Créer un loader pour chaque sous-dossier
+      loader = DirectoryLoader(subdir)
+      loaders.append(loader)
   if PERSIST:
-    index = VectorstoreIndexCreator(vectorstore_kwargs={"persist_directory":"persist"}).from_loaders([loader])
-  else:
-    index = VectorstoreIndexCreator().from_loaders([loader])
+    index = VectorstoreIndexCreator(vectorstore_kwargs={"persist_directory":"persist"}).from_loaders(loaders)
+  else: 
+    index = VectorstoreIndexCreator().from_loaders(loaders)
+
 
 chain = ConversationalRetrievalChain.from_llm(
-    llm=ChatOpenAI(model="gpt-3.5-turbo-16k"),
+    llm=ChatOpenAI(model="gpt-3.5-turbo"), # gpt-3.5-turbo-16k ...
     retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),
 )
 
