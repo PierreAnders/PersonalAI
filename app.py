@@ -23,7 +23,6 @@ app = Flask(__name__)
 swagger = Swagger(app)
 CORS(app)
 
-# Enable to save to disk & reuse the model (for repeated queries on the same data)
 PERSIST = False
 
 if PERSIST and os.path.exists("persist"):
@@ -31,12 +30,10 @@ if PERSIST and os.path.exists("persist"):
   vectorstore = Chroma(persist_directory="persist", embedding_function=OpenAIEmbeddings())
   index = VectorStoreIndexWrapper(vectorstore=vectorstore)
 else:
-  # Détecter tous les sous-dossiers dans le répertoire de données
   subdirs = glob('data/*/')
 
   loaders = []
   for subdir in subdirs:
-      # Créer un loader pour chaque sous-dossier
       loader = DirectoryLoader(subdir)
       loaders.append(loader)
   if PERSIST:
@@ -46,14 +43,13 @@ else:
 
 
 chain = ConversationalRetrievalChain.from_llm(
-    llm=ChatOpenAI(model="gpt-3.5-turbo"), # gpt-3.5-turbo-16k ...
+    llm=ChatOpenAI(model="gpt-4"), # gpt-3.5-turbo-16k ...
     retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),
 )
 
-# Historique de la conversation stocké par session_id
 chat_histories = {}
 
-@app.route('/chat', methods=['POST'])
+@app.route('/AIchatWithData', methods=['POST'])
 def chat():
     """
     Cette API lance une conversation avec le bot
@@ -92,6 +88,51 @@ def chat():
 
     return jsonify(result)
 
+@app.route('/AIchatGeneric', methods=['POST'])
+def chat_generic():
+    """
+    Cette API lance une conversation avec le chatbot générique
+    ---
+    tags:
+      - Chat API
+    parameters:
+    - in: body
+      name: body
+      schema:
+        type: object
+        properties:
+          session_id:
+            type: string
+            description: L'ID de la session
+          query:
+            type: string
+            description: La question posée par l'utilisateur
+        required:
+          - session_id
+          - query
+    responses:
+      200:
+        description: Réponse du chatbot générique
+    """
+    data = request.get_json()
+    session_id = data.get("session_id")
+    query = data.get("query")
+
+    chat_history = chat_histories.get(session_id, [])
+    chat_history.append((query, ""))
+
+    messages = [{"role": "user", "content": msg} for msg, _ in chat_history]
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=messages)
+
+    assistant_reply = response["choices"][0]["message"]["content"]
+    
+    chat_history[-1] = (query, assistant_reply)
+    chat_histories[session_id] = chat_history
+
+    return jsonify({"answer": assistant_reply})
 
 if __name__ == "__main__":
     app.run(debug=True)
