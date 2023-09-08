@@ -154,37 +154,39 @@ def upload_file():
     """
     uploaded_file = request.files['file']
     if uploaded_file:
-        file_path = os.path.join("data", uploaded_file.filename)
+        file_path = os.path.join("data/user_id", uploaded_file.filename)
         uploaded_file.save(file_path)
         return jsonify({"message": "Fichier téléchargé avec succès."})
     else:
         return jsonify({"message": "Aucun fichier n'a été téléchargé."})
     
 @app.route('/list_files', methods=['GET'])
-def list_files():
+def list_user_files():
     """
-    Cette API affiche la liste de tous les fichiers de l'utilisateur dans le dossier "data"
+    Cette API affiche la liste de tous les fichiers de l'utilisateur dans le dossier "data/user_id"
     ---
     tags:
-      - List Files API
+      - List User Files API
     responses:
       200:
         description: Liste des fichiers de l'utilisateur
+      404:
+        description: Le dossier 'data/user_id' n'existe pas ou est vide
     """
-    data_folder = "data"
-    if os.path.exists(data_folder) and os.path.isdir(data_folder):
-        files = os.listdir(data_folder)
+    user_data_folder = "data/user_id"
+    if os.path.exists(user_data_folder) and os.path.isdir(user_data_folder):
+        files = os.listdir(user_data_folder)
         return jsonify({"files": files})
     else:
-        return jsonify({"message": "Le dossier 'data' n'existe pas ou est vide."})
+        return jsonify({"message": "Le dossier 'data/user_id' n'existe pas ou est vide."}), 404
     
-@app.route('/read_file/<filename>', methods=['GET'])
-def read_file(filename):
+@app.route('/read_user_file/<filename>', methods=['GET'])
+def read_user_file(filename):
     """
-    Cette API permet à l'utilisateur de lire le contenu d'un fichier du dossier "data"
+    Cette API permet à l'utilisateur de lire le contenu d'un fichier du dossier "data/user_id"
     ---
     tags:
-      - Read File API
+      - Read User File API
     parameters:
     - in: path
       name: filename
@@ -197,21 +199,21 @@ def read_file(filename):
       404:
         description: Le fichier n'a pas été trouvé
     """
-    data_folder = "data"
-    file_path = os.path.join(data_folder, filename)
+    user_data_folder = "data/user_id"
+    file_path = os.path.join(user_data_folder, filename)
     
     if os.path.exists(file_path) and os.path.isfile(file_path):
         return send_file(file_path, as_attachment=True)
     else:
         return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
     
-@app.route('/delete_file/<filename>', methods=['DELETE'])
-def delete_file(filename):
+@app.route('/delete_user_file/<filename>', methods=['DELETE'])
+def delete_user_file(filename):
     """
-    Cette API permet à l'utilisateur de supprimer un fichier du dossier "data"
+    Cette API permet à l'utilisateur de supprimer un fichier du dossier "data/user_id"
     ---
     tags:
-      - Delete File API
+      - Delete User File API
     parameters:
     - in: path
       name: filename
@@ -224,12 +226,39 @@ def delete_file(filename):
       404:
         description: Le fichier n'a pas été trouvé
     """
-    data_folder = "data"
-    file_path = os.path.join(data_folder, filename)
+    user_data_folder = "data/user_id"
+    file_path = os.path.join(user_data_folder, filename)
     
     if os.path.exists(file_path) and os.path.isfile(file_path):
         os.remove(file_path)
         return jsonify({"message": f"Fichier {filename} supprimé avec succès."})
+    else:
+        return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
+
+@app.route('/download_user_file/<filename>', methods=['GET'])
+def download_user_file(filename):
+    """
+    Cette API permet à l'utilisateur de télécharger un fichier du dossier "data/user_id"
+    ---
+    tags:
+      - Download User File API
+    parameters:
+    - in: path
+      name: filename
+      type: string
+      required: true
+      description: Le nom du fichier à télécharger
+    responses:
+      200:
+        description: Téléchargement du fichier
+      404:
+        description: Le fichier n'a pas été trouvé
+    """
+    user_data_folder = "data/user_id"
+    file_path = os.path.join(user_data_folder, filename)
+    
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        return send_file(file_path, as_attachment=True)
     else:
         return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
 
