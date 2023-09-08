@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import os
 import sys
@@ -30,7 +30,8 @@ if PERSIST and os.path.exists("persist"):
   vectorstore = Chroma(persist_directory="persist", embedding_function=OpenAIEmbeddings())
   index = VectorStoreIndexWrapper(vectorstore=vectorstore)
 else:
-  subdirs = glob('data/*/')
+  # subdirs = glob('data/*/') 
+  subdirs = glob('data/user_id/')
 
   loaders = []
   for subdir in subdirs:
@@ -133,6 +134,104 @@ def chat_generic():
     chat_histories[session_id] = chat_history
 
     return jsonify({"answer": assistant_reply})
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    """
+    Cette API permet à l'utilisateur d'ajouter des fichiers au dossier "data"
+    ---
+    tags:
+      - Upload API
+    parameters:
+    - in: formData
+      name: file
+      type: file
+      required: true
+      description: Le fichier à télécharger dans le dossier "data"
+    responses:
+      200:
+        description: Fichier téléchargé avec succès
+    """
+    uploaded_file = request.files['file']
+    if uploaded_file:
+        file_path = os.path.join("data", uploaded_file.filename)
+        uploaded_file.save(file_path)
+        return jsonify({"message": "Fichier téléchargé avec succès."})
+    else:
+        return jsonify({"message": "Aucun fichier n'a été téléchargé."})
+    
+@app.route('/list_files', methods=['GET'])
+def list_files():
+    """
+    Cette API affiche la liste de tous les fichiers de l'utilisateur dans le dossier "data"
+    ---
+    tags:
+      - List Files API
+    responses:
+      200:
+        description: Liste des fichiers de l'utilisateur
+    """
+    data_folder = "data"
+    if os.path.exists(data_folder) and os.path.isdir(data_folder):
+        files = os.listdir(data_folder)
+        return jsonify({"files": files})
+    else:
+        return jsonify({"message": "Le dossier 'data' n'existe pas ou est vide."})
+    
+@app.route('/read_file/<filename>', methods=['GET'])
+def read_file(filename):
+    """
+    Cette API permet à l'utilisateur de lire le contenu d'un fichier du dossier "data"
+    ---
+    tags:
+      - Read File API
+    parameters:
+    - in: path
+      name: filename
+      type: string
+      required: true
+      description: Le nom du fichier à lire
+    responses:
+      200:
+        description: Contenu du fichier
+      404:
+        description: Le fichier n'a pas été trouvé
+    """
+    data_folder = "data"
+    file_path = os.path.join(data_folder, filename)
+    
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        return send_file(file_path, as_attachment=True)
+    else:
+        return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
+    
+@app.route('/delete_file/<filename>', methods=['DELETE'])
+def delete_file(filename):
+    """
+    Cette API permet à l'utilisateur de supprimer un fichier du dossier "data"
+    ---
+    tags:
+      - Delete File API
+    parameters:
+    - in: path
+      name: filename
+      type: string
+      required: true
+      description: Le nom du fichier à supprimer
+    responses:
+      200:
+        description: Fichier supprimé avec succès
+      404:
+        description: Le fichier n'a pas été trouvé
+    """
+    data_folder = "data"
+    file_path = os.path.join(data_folder, filename)
+    
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        os.remove(file_path)
+        return jsonify({"message": f"Fichier {filename} supprimé avec succès."})
+    else:
+        return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
 
 if __name__ == "__main__":
     app.run(debug=True)
