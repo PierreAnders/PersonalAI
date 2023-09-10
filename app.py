@@ -1,3 +1,4 @@
+from flask_migrate import Migrate
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import os
@@ -15,11 +16,24 @@ from langchain.embeddings import OpenAIEmbeddings
 from dotenv import load_dotenv
 from glob import glob
 
+from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required
+
 load_dotenv()
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = "50c34e5139cb598bf297a67910047d29a422b1bd828557ec"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:3568@localhost/mia'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+migrate = Migrate(app, db)
+
+bcrypt = Bcrypt(app)
+jwt = JWTManager(app)
 swagger = Swagger(app)
 CORS(app)
 
@@ -44,11 +58,122 @@ else:
 
 
 chain = ConversationalRetrievalChain.from_llm(
-    llm=ChatOpenAI(model="gpt-4"), # gpt-3.5-turbo-16k ...
+    llm=ChatOpenAI(model="gpt-3.5-turbo"), # gpt-3.5-turbo-16k, gpt-4 ...
     retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),
 )
 
 chat_histories = {}
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    mot_de_passe = db.Column(db.String(255), nullable=False)
+    date_de_creation = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
+
+@app.route('/register', methods=['POST'])
+def register():
+    """
+    Cette API permet à l'utilisateur de s'inscrire en fournissant un nom d'utilisateur, un email et un mot de passe.
+    ---
+    tags:
+      - Authentification API
+    parameters:
+    - in: body
+      name: body
+      schema:
+        type: object
+        properties:
+          nom:
+            type: string
+            description: Le nom de l'utilisateur
+          email:
+            type: string
+            description: L'adresse email de l'utilisateur
+          mot_de_passe:
+            type: string
+            description: Le mot de passe de l'utilisateur
+        required:
+          - nom
+          - email
+          - mot_de_passe
+    responses:
+      201:
+        description: Inscription réussie
+      400:
+        description: Erreur de requête en cas de champs manquants
+    """
+    data = request.get_json()
+    nom = data.get('nom')
+    email = data.get('email')
+    mot_de_passe = data.get('mot_de_passe')
+
+    if not nom or not email or not mot_de_passe:
+        return jsonify({'message': 'Veuillez fournir le nom, l\'email et le mot de passe'}), 400
+
+    hashed_password = bcrypt.generate_password_hash(mot_de_passe).decode('utf-8')
+    new_user = User(nom=nom, email=email, mot_de_passe=hashed_password)
+
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({'message': 'Inscription réussie'}), 201
+
+@app.route('/login', methods=['POST'])
+def login():
+    """
+    Cette API permet à l'utilisateur de se connecter en fournissant un email et un mot de passe.
+    ---
+    tags:
+      - Authentification API
+    parameters:
+    - in: body
+      name: body
+      schema:
+        type: object
+        properties:
+          email:
+            type: string
+            description: L'adresse email de l'utilisateur
+          mot_de_passe:
+            type: string
+            description: Le mot de passe de l'utilisateur
+        required:
+          - email
+          - mot_de_passe
+    responses:
+      200:
+        description: Connexion réussie
+      401:
+        description: Échec de la connexion en raison d'informations incorrectes
+    """
+    data = request.get_json()
+    email = data.get('email')
+    mot_de_passe = data.get('mot_de_passe')
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user or not bcrypt.check_password_hash(user.mot_de_passe, mot_de_passe):
+        return jsonify({'message': 'Email ou mot de passe incorrect'}), 401
+
+    access_token = create_access_token(identity=user.id)
+    return jsonify({'access_token': access_token})
+
+@app.route('/protected', methods=['GET'])
+# @jwt_required()
+def protected():
+    """
+    Cette API représente une ressource protégée nécessitant une authentification.
+    ---
+    tags:
+      - Authentification API
+    responses:
+      200:
+        description: Ressource protégée
+      401:
+        description: Échec de l'authentification
+    """
+    return jsonify({'message': 'Ressource protégée'})
 
 @app.route('/AIchatWithData', methods=['POST'])
 def chat():
@@ -263,4 +388,6 @@ def download_user_file(filename):
         return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
