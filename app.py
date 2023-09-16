@@ -159,23 +159,24 @@ def login():
     access_token = create_access_token(identity=user.id)
     return jsonify({'access_token': access_token})
 
-@app.route('/protected', methods=['GET'])
+# @app.route('/protected', methods=['GET'])
 # @jwt_required()
-def protected():
-    """
-    Cette API représente une ressource protégée nécessitant une authentification.
-    ---
-    tags:
-      - Authentification API
-    responses:
-      200:
-        description: Ressource protégée
-      401:
-        description: Échec de l'authentification
-    """
-    return jsonify({'message': 'Ressource protégée'})
+# def protected():
+#     """
+#     Cette API représente une ressource protégée nécessitant une authentification.
+#     ---
+#     tags:
+#       - Authentification API
+#     responses:
+#       200:
+#         description: Ressource protégée
+#       401:
+#         description: Échec de l'authentification
+#     """
+#     return jsonify({'message': 'Ressource protégée'})
 
 @app.route('/AIchatWithData', methods=['POST'])
+@jwt_required()
 def chat():
     """
     Cette API lance une conversation avec le bot
@@ -215,6 +216,7 @@ def chat():
     return jsonify(result)
 
 @app.route('/AIchatGeneric', methods=['POST'])
+@jwt_required()
 def chat_generic():
     """
     Cette API lance une conversation avec le chatbot générique
@@ -261,6 +263,7 @@ def chat_generic():
     return jsonify({"answer": assistant_reply})
 
 @app.route('/upload', methods=['POST'])
+@jwt_required()
 def upload_file():
     """
     Cette API permet à l'utilisateur d'ajouter des fichiers au dossier "data"
@@ -286,6 +289,7 @@ def upload_file():
         return jsonify({"message": "Aucun fichier n'a été téléchargé."})
     
 @app.route('/list_files', methods=['GET'])
+@jwt_required()
 def list_user_files():
     """
     Cette API affiche la liste de tous les fichiers de l'utilisateur dans le dossier "data/user_id"
@@ -306,6 +310,7 @@ def list_user_files():
         return jsonify({"message": "Le dossier 'data/user_id' n'existe pas ou est vide."}), 404
     
 @app.route('/read_user_file/<filename>', methods=['GET'])
+@jwt_required()
 def read_user_file(filename):
     """
     Cette API permet à l'utilisateur de lire le contenu d'un fichier du dossier "data/user_id"
@@ -333,6 +338,7 @@ def read_user_file(filename):
         return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
     
 @app.route('/delete_user_file/<filename>', methods=['DELETE'])
+@jwt_required()
 def delete_user_file(filename):
     """
     Cette API permet à l'utilisateur de supprimer un fichier du dossier "data/user_id"
@@ -361,6 +367,7 @@ def delete_user_file(filename):
         return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
 
 @app.route('/download_user_file/<filename>', methods=['GET'])
+@jwt_required()
 def download_user_file(filename):
     """
     Cette API permet à l'utilisateur de télécharger un fichier du dossier "data/user_id"
