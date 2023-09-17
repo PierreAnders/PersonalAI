@@ -1,0 +1,10 @@
+Flask
+Flask-Migrate
+Flask-Cors
+openai
+flasgger
+langchain
+sqlalchemy
+flask-bcrypt
+flask-jwt-extended
+python-dotenv

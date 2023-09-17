@@ -17,8 +17,12 @@ from dotenv import load_dotenv
 from glob import glob
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import IntegrityError
+
 from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+
+import datetime
 
 load_dotenv()
 
@@ -28,6 +32,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = "50c34e5139cb598bf297a67910047d29a422b1bd828557ec"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:3568@localhost/mia'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
@@ -70,7 +75,63 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     mot_de_passe = db.Column(db.String(255), nullable=False)
     date_de_creation = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
+    user_info = db.relationship('AgentInformation', backref='user', lazy=True)
 
+class AgentInformation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(255), nullable=False)
+    objectif = db.Column(db.String(255), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __init__(self, nom, objectif, user_id):
+        self.nom = nom
+        self.objectif = objectif
+        self.user_id = user_id
+
+@app.route('/agent_info', methods=['POST'])
+@jwt_required()
+def add_agent_info():
+    """
+    Cette API permet à l'utilisateur de saisir les informations de l'agent, y compris le nom et l'objectif.
+    ---
+    tags:
+      - Agent Information API
+    parameters:
+    - in: body
+      name: body
+      schema:
+        type: object
+        properties:
+          nom:
+            type: string
+            description: Le nom de l'agent
+          objectif:
+            type: string
+            description: L'objectif de l'agent
+        required:
+          - nom
+    responses:
+      201:
+        description: Informations de l'agent enregistrées avec succès
+    """
+    data = request.get_json()
+    nom = data.get("nom")
+    objectif = data.get("objectif")
+
+    # Obtenez l'identité de l'utilisateur à partir du jeton JWT
+    user_id = get_jwt_identity()
+
+    # Créez une nouvelle instance d'AgentInformation liée à l'utilisateur
+    agent_info = AgentInformation(nom=nom, objectif=objectif, user_id=user_id)
+
+    try:
+        db.session.add(agent_info)
+        db.session.commit()
+        return jsonify({"message": "Informations de l'agent enregistrées avec succès"}), 201
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify({"message": "Erreur de base de données : " + str(e)}), 500
+    
 @app.route('/register', methods=['POST'])
 def register():
     """
@@ -175,6 +236,33 @@ def login():
 #     """
 #     return jsonify({'message': 'Ressource protégée'})
 
+def get_user_info(user_id):
+    """
+    Cette fonction récupère les informations de l'utilisateur à partir de la base de données.
+    Args:
+        user_id (int): L'identifiant de l'utilisateur.
+    Returns:
+        dict: Un dictionnaire contenant les informations de l'utilisateur (nom et objectif).
+    """
+    user = User.query.filter_by(id=user_id).first()
+
+    if user:
+        # Si l'utilisateur existe, récupérez son nom et son objectif
+        user_info = {
+            "nom": user.nom,
+            "objectif": None  # Par défaut, l'objectif est None
+        }
+
+        # Parcourez la liste d'AgentInformation liée à l'utilisateur
+        for agent_info in user.user_info:
+            user_info["objectif"] = agent_info.objectif
+            break  # Sortez de la boucle après avoir trouvé le premier objectif (si présent)
+
+        return user_info
+    else:
+        # Si l'utilisateur n'existe pas, retournez un dictionnaire vide ou une valeur par défaut
+        return {"nom": "Utilisateur inconnu", "objectif": None}
+
 @app.route('/AIchatWithData', methods=['POST'])
 @jwt_required()
 def chat():
@@ -206,6 +294,14 @@ def chat():
     session_id = data.get("session_id")
     query = data.get("query")
 
+    user_id = get_jwt_identity()
+
+    user_info = get_user_info(user_id)
+
+    current_date = datetime.date.today().strftime('%Y-%m-%d')
+
+    query = f"Nom de l'utilisateur: {user_info['nom']}. Objectif de l'utilisateur : {user_info['objectif']}. Date du jour : {current_date}. {query}"
+
     chat_history = chat_histories.get(session_id, [])
 
     result = chain({"question": query, "chat_history": chat_history})
@@ -214,6 +310,7 @@ def chat():
     chat_histories[session_id] = chat_history
 
     return jsonify(result)
+
 
 @app.route('/AIchatGeneric', methods=['POST'])
 @jwt_required()
@@ -338,7 +435,7 @@ def read_user_file(filename):
         return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
     
 @app.route('/delete_user_file/<filename>', methods=['DELETE'])
-@jwt_required()
+# @jwt_required()
 def delete_user_file(filename):
     """
     Cette API permet à l'utilisateur de supprimer un fichier du dossier "data/user_id"
@@ -367,7 +464,7 @@ def delete_user_file(filename):
         return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
 
 @app.route('/download_user_file/<filename>', methods=['GET'])
-@jwt_required()
+# @jwt_required()
 def download_user_file(filename):
     """
     Cette API permet à l'utilisateur de télécharger un fichier du dossier "data/user_id"
