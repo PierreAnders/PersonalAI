@@ -22,6 +22,7 @@ from sqlalchemy.exc import IntegrityError
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 
+import uuid
 import datetime
 
 load_dotenv()
@@ -64,13 +65,12 @@ else:
 
 chain = ConversationalRetrievalChain.from_llm(
     llm=ChatOpenAI(model="gpt-3.5-turbo"), # gpt-3.5-turbo-16k, gpt-4 ...
-    retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),
-)
+    retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),)
 
 chat_histories = {}
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(36), primary_key=True, default=str(uuid.uuid4()), unique=True)
     nom = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     mot_de_passe = db.Column(db.String(255), nullable=False)
@@ -81,7 +81,7 @@ class AgentInformation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String(255), nullable=False)
     objectif = db.Column(db.String(255), nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
 
     def __init__(self, nom, objectif, user_id):
         self.nom = nom
