@@ -30,42 +30,43 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app = Flask(__name__)
+
 app.config['SECRET_KEY'] = "50c34e5139cb598bf297a67910047d29a422b1bd828557ec"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:3568@localhost/mia'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-
 migrate = Migrate(app, db)
 
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
+
 swagger = Swagger(app)
 CORS(app)
 
-PERSIST = False
+# PERSIST = False
 
-if PERSIST and os.path.exists("persist"):
-  print("Reusing index...\n")
-  vectorstore = Chroma(persist_directory="persist", embedding_function=OpenAIEmbeddings())
-  index = VectorStoreIndexWrapper(vectorstore=vectorstore)
-else:
-  # subdirs = glob('data/*/') 
-  subdirs = glob('data/user_id/')
+# if PERSIST and os.path.exists("persist"):
+#   print("Reusing index...\n")
+#   vectorstore = Chroma(persist_directory="persist", embedding_function=OpenAIEmbeddings())
+#   index = VectorStoreIndexWrapper(vectorstore=vectorstore)
+# else:
+#   # subdirs = glob('data/*/') 
+#   subdirs = glob('data/user_id/')
 
-  loaders = []
-  for subdir in subdirs:
-      loader = DirectoryLoader(subdir)
-      loaders.append(loader)
-  if PERSIST:
-    index = VectorstoreIndexCreator(vectorstore_kwargs={"persist_directory":"persist"}).from_loaders(loaders)
-  else: 
-    index = VectorstoreIndexCreator().from_loaders(loaders)
+#   loaders = []
+#   for subdir in subdirs:
+#       loader = DirectoryLoader(subdir)
+#       loaders.append(loader)
+#   if PERSIST:
+#     index = VectorstoreIndexCreator(vectorstore_kwargs={"persist_directory":"persist"}).from_loaders(loaders)
+#   else: 
+#     index = VectorstoreIndexCreator().from_loaders(loaders)
 
 
-chain = ConversationalRetrievalChain.from_llm(
-    llm=ChatOpenAI(model="gpt-3.5-turbo"), # gpt-3.5-turbo-16k, gpt-4 ...
-    retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),)
+# chain = ConversationalRetrievalChain.from_llm(
+#     llm=ChatOpenAI(model="gpt-3.5-turbo"), # gpt-3.5-turbo-16k, gpt-4 ...
+#     retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),)
 
 chat_histories = {}
 
@@ -91,29 +92,6 @@ class AgentInformation(db.Model):
 @app.route('/agent_info', methods=['POST'])
 @jwt_required()
 def add_agent_info():
-    """
-    Cette API permet à l'utilisateur de saisir les informations de l'agent, y compris le nom et l'objectif.
-    ---
-    tags:
-      - Agent Information API
-    parameters:
-    - in: body
-      name: body
-      schema:
-        type: object
-        properties:
-          nom:
-            type: string
-            description: Le nom de l'agent
-          objectif:
-            type: string
-            description: L'objectif de l'agent
-        required:
-          - nom
-    responses:
-      201:
-        description: Informations de l'agent enregistrées avec succès
-    """
     data = request.get_json()
     nom = data.get("nom")
     objectif = data.get("objectif")
@@ -134,36 +112,6 @@ def add_agent_info():
     
 @app.route('/register', methods=['POST'])
 def register():
-    """
-    Cette API permet à l'utilisateur de s'inscrire en fournissant un nom d'utilisateur, un email et un mot de passe.
-    ---
-    tags:
-      - Authentification API
-    parameters:
-    - in: body
-      name: body
-      schema:
-        type: object
-        properties:
-          nom:
-            type: string
-            description: Le nom de l'utilisateur
-          email:
-            type: string
-            description: L'adresse email de l'utilisateur
-          mot_de_passe:
-            type: string
-            description: Le mot de passe de l'utilisateur
-        required:
-          - nom
-          - email
-          - mot_de_passe
-    responses:
-      201:
-        description: Inscription réussie
-      400:
-        description: Erreur de requête en cas de champs manquants
-    """
     data = request.get_json()
     nom = data.get('nom')
     email = data.get('email')
@@ -177,37 +125,21 @@ def register():
 
     db.session.add(new_user)
     db.session.commit()
+    user_id = new_user.id
+    user_data_folder = os.path.join('data', str(user_id))
+
+    try:
+      os.mkdir(user_data_folder)
+      print(f"Dossier '{user_data_folder}' créé avec succès.")
+    except FileExistsError:
+        print(f"Le dossier '{user_data_folder}' existe déjà.")
+    except Exception as e:
+        print(f"Une erreur s'est produite lors de la création du dossier : {str(e)}")
 
     return jsonify({'message': 'Inscription réussie'}), 201
 
 @app.route('/login', methods=['POST'])
 def login():
-    """
-    Cette API permet à l'utilisateur de se connecter en fournissant un email et un mot de passe.
-    ---
-    tags:
-      - Authentification API
-    parameters:
-    - in: body
-      name: body
-      schema:
-        type: object
-        properties:
-          email:
-            type: string
-            description: L'adresse email de l'utilisateur
-          mot_de_passe:
-            type: string
-            description: Le mot de passe de l'utilisateur
-        required:
-          - email
-          - mot_de_passe
-    responses:
-      200:
-        description: Connexion réussie
-      401:
-        description: Échec de la connexion en raison d'informations incorrectes
-    """
     data = request.get_json()
     email = data.get('email')
     mot_de_passe = data.get('mot_de_passe')
@@ -218,23 +150,8 @@ def login():
         return jsonify({'message': 'Email ou mot de passe incorrect'}), 401
 
     access_token = create_access_token(identity=user.id)
-    return jsonify({'access_token': access_token})
 
-# @app.route('/protected', methods=['GET'])
-# @jwt_required()
-# def protected():
-#     """
-#     Cette API représente une ressource protégée nécessitant une authentification.
-#     ---
-#     tags:
-#       - Authentification API
-#     responses:
-#       200:
-#         description: Ressource protégée
-#       401:
-#         description: Échec de l'authentification
-#     """
-#     return jsonify({'message': 'Ressource protégée'})
+    return jsonify({'access_token': access_token})
 
 def get_user_info(user_id):
     """
@@ -266,41 +183,39 @@ def get_user_info(user_id):
 @app.route('/AIchatWithData', methods=['POST'])
 @jwt_required()
 def chat():
-    """
-    Cette API lance une conversation avec le bot
-    ---
-    tags:
-      - Chat API
-    parameters:
-    - in: body
-      name: body
-      schema:
-        type: object
-        properties:
-          session_id:
-            type: string
-            description: L'ID de la session
-          query:
-            type: string
-            description: La question posée par l'utilisateur
-        required:
-          - session_id
-          - query
-    responses:
-      200:
-        description: Réponse du bot
-    """
+    
+    PERSIST = False
+
+    if PERSIST and os.path.exists("persist"):
+      print("Reusing index...\n")
+      vectorstore = Chroma(persist_directory="persist", embedding_function=OpenAIEmbeddings())
+      index = VectorStoreIndexWrapper(vectorstore=vectorstore)
+    else:
+      user_id = get_jwt_identity()
+      user_data_folder = f'data/{user_id}/'
+      subdirs = glob(user_data_folder)
+
+      loaders = []
+      for subdir in subdirs:
+          loader = DirectoryLoader(subdir)
+          loaders.append(loader)
+      if PERSIST:
+        index = VectorstoreIndexCreator(vectorstore_kwargs={"persist_directory":"persist"}).from_loaders(loaders)
+      else: 
+        index = VectorstoreIndexCreator().from_loaders(loaders)
+
+    chain = ConversationalRetrievalChain.from_llm(
+        llm=ChatOpenAI(model="gpt-3.5-turbo"), # gpt-3.5-turbo-16k, gpt-4 ...
+        retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),)
+
     data = request.get_json()
     session_id = data.get("session_id")
     query = data.get("query")
 
-    user_id = get_jwt_identity()
-
-    user_info = get_user_info(user_id)
-
-    current_date = datetime.date.today().strftime('%Y-%m-%d')
-
-    query = f"Nom de l'utilisateur: {user_info['nom']}. Objectif de l'utilisateur : {user_info['objectif']}. Date du jour : {current_date}. {query}"
+    # user_id = get_jwt_identity()
+    # user_info = get_user_info(user_id)
+    # current_date = datetime.date.today().strftime('%Y-%m-%d')
+    # query = f"Nom de l'utilisateur: {user_info['nom']}. Objectif de l'utilisateur : {user_info['objectif']}. Date du jour : {current_date}. {query}"
 
     chat_history = chat_histories.get(session_id, [])
 
@@ -311,34 +226,9 @@ def chat():
 
     return jsonify(result)
 
-
 @app.route('/AIchatGeneric', methods=['POST'])
 @jwt_required()
 def chat_generic():
-    """
-    Cette API lance une conversation avec le chatbot générique
-    ---
-    tags:
-      - Chat API
-    parameters:
-    - in: body
-      name: body
-      schema:
-        type: object
-        properties:
-          session_id:
-            type: string
-            description: L'ID de la session
-          query:
-            type: string
-            description: La question posée par l'utilisateur
-        required:
-          - session_id
-          - query
-    responses:
-      200:
-        description: Réponse du chatbot générique
-    """
     data = request.get_json()
     session_id = data.get("session_id")
     query = data.get("query")
@@ -362,24 +252,11 @@ def chat_generic():
 @app.route('/upload', methods=['POST'])
 @jwt_required()
 def upload_file():
-    """
-    Cette API permet à l'utilisateur d'ajouter des fichiers au dossier "data"
-    ---
-    tags:
-      - Upload API
-    parameters:
-    - in: formData
-      name: file
-      type: file
-      required: true
-      description: Le fichier à télécharger dans le dossier "data"
-    responses:
-      200:
-        description: Fichier téléchargé avec succès
-    """
+    user_id = get_jwt_identity()
+    user_data_folder = f'data/{user_id}/'
     uploaded_file = request.files['file']
     if uploaded_file:
-        file_path = os.path.join("data/user_id", uploaded_file.filename)
+        file_path = os.path.join(user_data_folder, uploaded_file.filename)
         uploaded_file.save(file_path)
         return jsonify({"message": "Fichier téléchargé avec succès."})
     else:
@@ -388,18 +265,9 @@ def upload_file():
 @app.route('/list_files', methods=['GET'])
 @jwt_required()
 def list_user_files():
-    """
-    Cette API affiche la liste de tous les fichiers de l'utilisateur dans le dossier "data/user_id"
-    ---
-    tags:
-      - List User Files API
-    responses:
-      200:
-        description: Liste des fichiers de l'utilisateur
-      404:
-        description: Le dossier 'data/user_id' n'existe pas ou est vide
-    """
-    user_data_folder = "data/user_id"
+    user_id = get_jwt_identity()
+    user_data_folder = f'data/{user_id}/'
+
     if os.path.exists(user_data_folder) and os.path.isdir(user_data_folder):
         files = os.listdir(user_data_folder)
         return jsonify({"files": files})
@@ -409,24 +277,9 @@ def list_user_files():
 @app.route('/read_user_file/<filename>', methods=['GET'])
 @jwt_required()
 def read_user_file(filename):
-    """
-    Cette API permet à l'utilisateur de lire le contenu d'un fichier du dossier "data/user_id"
-    ---
-    tags:
-      - Read User File API
-    parameters:
-    - in: path
-      name: filename
-      type: string
-      required: true
-      description: Le nom du fichier à lire
-    responses:
-      200:
-        description: Contenu du fichier
-      404:
-        description: Le fichier n'a pas été trouvé
-    """
-    user_data_folder = "data/user_id"
+   
+    user_id = get_jwt_identity()
+    user_data_folder = f'data/{user_id}/'
     file_path = os.path.join(user_data_folder, filename)
     
     if os.path.exists(file_path) and os.path.isfile(file_path):
@@ -435,26 +288,10 @@ def read_user_file(filename):
         return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
     
 @app.route('/delete_user_file/<filename>', methods=['DELETE'])
-# @jwt_required()
+@jwt_required()
 def delete_user_file(filename):
-    """
-    Cette API permet à l'utilisateur de supprimer un fichier du dossier "data/user_id"
-    ---
-    tags:
-      - Delete User File API
-    parameters:
-    - in: path
-      name: filename
-      type: string
-      required: true
-      description: Le nom du fichier à supprimer
-    responses:
-      200:
-        description: Fichier supprimé avec succès
-      404:
-        description: Le fichier n'a pas été trouvé
-    """
-    user_data_folder = "data/user_id"
+    user_id = get_jwt_identity()
+    user_data_folder = f'data/{user_id}/'
     file_path = os.path.join(user_data_folder, filename)
     
     if os.path.exists(file_path) and os.path.isfile(file_path):
@@ -464,26 +301,10 @@ def delete_user_file(filename):
         return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
 
 @app.route('/download_user_file/<filename>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def download_user_file(filename):
-    """
-    Cette API permet à l'utilisateur de télécharger un fichier du dossier "data/user_id"
-    ---
-    tags:
-      - Download User File API
-    parameters:
-    - in: path
-      name: filename
-      type: string
-      required: true
-      description: Le nom du fichier à télécharger
-    responses:
-      200:
-        description: Téléchargement du fichier
-      404:
-        description: Le fichier n'a pas été trouvé
-    """
-    user_data_folder = "data/user_id"
+    user_id = get_jwt_identity()
+    user_data_folder = f'data/{user_id}/'
     file_path = os.path.join(user_data_folder, filename)
     
     if os.path.exists(file_path) and os.path.isfile(file_path):
