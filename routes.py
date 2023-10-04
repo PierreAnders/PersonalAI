@@ -1,10 +1,9 @@
-from flask_migrate import Migrate
-from flask import Flask, request, jsonify, send_file
-from flask_cors import CORS
+from flask import Blueprint, request, jsonify, send_file
+from models import db, User, AgentInformation
 import os
-import sys
-from flasgger import Swagger
-import openai
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from sqlalchemy.exc import IntegrityError
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import DirectoryLoader
@@ -13,83 +12,15 @@ from langchain.indexes.vectorstore import VectorStoreIndexWrapper
 from langchain.llms import OpenAI
 from langchain.vectorstores import Chroma
 from langchain.embeddings import OpenAIEmbeddings
-from dotenv import load_dotenv
 from glob import glob
+import openai
 
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.exc import IntegrityError
-
-from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-
-from config import Config
-
-import uuid
-import datetime
-
-load_dotenv()
-
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
-app = Flask(__name__)
-app.config.from_object(Config)
-
-# app.config['SECRET_KEY'] = "50c34e5139cb598bf297a67910047d29a422b1bd828557ec"
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:3568@localhost/mia'
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-
-bcrypt = Bcrypt(app)
-jwt = JWTManager(app)
-
-swagger = Swagger(app)
-CORS(app)
+bp = Blueprint('main', __name__)
+bcrypt = Bcrypt()
 
 chat_histories = {}
 
-class User(db.Model):
-    id = db.Column(db.String(36), primary_key=True, default=str(uuid.uuid4()), unique=True)
-    nom = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    mot_de_passe = db.Column(db.String(255), nullable=False)
-    date_de_creation = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
-    user_info = db.relationship('AgentInformation', backref='user', lazy=True)
-
-class AgentInformation(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    nom = db.Column(db.String(255), nullable=False)
-    objectif = db.Column(db.String(255), nullable=True)
-    user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
-
-    def __init__(self, nom, objectif, user_id):
-        self.nom = nom
-        self.objectif = objectif
-        self.user_id = user_id
-
-@app.route('/agent_info', methods=['POST'])
-@jwt_required()
-def add_agent_info():
-    data = request.get_json()
-    nom = data.get("nom")
-    objectif = data.get("objectif")
-
-    # Obtenez l'identité de l'utilisateur à partir du jeton JWT
-    user_id = get_jwt_identity()
-
-    # Créez une nouvelle instance d'AgentInformation liée à l'utilisateur
-    agent_info = AgentInformation(nom=nom, objectif=objectif, user_id=user_id)
-
-    try:
-        db.session.add(agent_info)
-        db.session.commit()
-        return jsonify({"message": "Informations de l'agent enregistrées avec succès"}), 201
-    except IntegrityError as e:
-        db.session.rollback()
-        return jsonify({"message": "Erreur de base de données : " + str(e)}), 500
-    
-@app.route('/register', methods=['POST'])
+@bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
     nom = data.get('nom')
@@ -117,7 +48,26 @@ def register():
 
     return jsonify({'message': 'Inscription réussie'}), 201
 
-@app.route('/login', methods=['POST'])
+@bp.route('/agent_info', methods=['POST'])
+@jwt_required()
+def add_agent_info():
+    data = request.get_json()
+    nom = data.get("nom")
+    objectif = data.get("objectif")
+
+    user_id = get_jwt_identity()
+
+    agent_info = AgentInformation(nom=nom, objectif=objectif, user_id=user_id)
+
+    try:
+        db.session.add(agent_info)
+        db.session.commit()
+        return jsonify({"message": "Informations de l'agent enregistrées avec succès"}), 201
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify({"message": "Erreur de base de données : " + str(e)}), 500
+
+@bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     email = data.get('email')
@@ -143,23 +93,21 @@ def get_user_info(user_id):
     user = User.query.filter_by(id=user_id).first()
 
     if user:
-        # Si l'utilisateur existe, récupérez son nom et son objectif
+
         user_info = {
             "nom": user.nom,
-            "objectif": None  # Par défaut, l'objectif est None
+            "objectif": None
         }
 
-        # Parcourez la liste d'AgentInformation liée à l'utilisateur
         for agent_info in user.user_info:
             user_info["objectif"] = agent_info.objectif
-            break  # Sortez de la boucle après avoir trouvé le premier objectif (si présent)
+            break
 
         return user_info
     else:
-        # Si l'utilisateur n'existe pas, retournez un dictionnaire vide ou une valeur par défaut
         return {"nom": "Utilisateur inconnu", "objectif": None}
 
-@app.route('/AIchatWithData', methods=['POST'])
+@bp.route('/AIchatWithData', methods=['POST'])
 @jwt_required()
 def chat():
     
@@ -205,7 +153,7 @@ def chat():
 
     return jsonify(result)
 
-@app.route('/AIchatGeneric', methods=['POST'])
+@bp.route('/AIchatGeneric', methods=['POST'])
 @jwt_required()
 def chat_generic():
     data = request.get_json()
@@ -228,7 +176,7 @@ def chat_generic():
 
     return jsonify({"answer": assistant_reply})
 
-@app.route('/upload', methods=['POST'])
+@bp.route('/upload', methods=['POST'])
 @jwt_required()
 def upload_file():
     user_id = get_jwt_identity()
@@ -241,7 +189,7 @@ def upload_file():
     else:
         return jsonify({"message": "Aucun fichier n'a été téléchargé."})
     
-@app.route('/list_files', methods=['GET'])
+@bp.route('/list_files', methods=['GET'])
 @jwt_required()
 def list_user_files():
     user_id = get_jwt_identity()
@@ -253,7 +201,7 @@ def list_user_files():
     else:
         return jsonify({"message": "Le dossier 'data/user_id' n'existe pas ou est vide."}), 404
     
-@app.route('/read_user_file/<filename>', methods=['GET'])
+@bp.route('/read_user_file/<filename>', methods=['GET'])
 @jwt_required()
 def read_user_file(filename):
    
@@ -266,7 +214,7 @@ def read_user_file(filename):
     else:
         return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
     
-@app.route('/delete_user_file/<filename>', methods=['DELETE'])
+@bp.route('/delete_user_file/<filename>', methods=['DELETE'])
 @jwt_required()
 def delete_user_file(filename):
     user_id = get_jwt_identity()
@@ -279,7 +227,7 @@ def delete_user_file(filename):
     else:
         return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
 
-@app.route('/download_user_file/<filename>', methods=['GET'])
+@bp.route('/download_user_file/<filename>', methods=['GET'])
 @jwt_required()
 def download_user_file(filename):
     user_id = get_jwt_identity()
@@ -290,8 +238,3 @@ def download_user_file(filename):
         return send_file(file_path, as_attachment=True)
     else:
         return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
-
-if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
