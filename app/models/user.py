@@ -1,4 +1,4 @@
-from app import db
+from app.extensions import db
 import uuid
 
 class User(db.Model):
@@ -7,7 +7,7 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     mot_de_passe = db.Column(db.String(255), nullable=False)
     date_de_creation = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
-    user_info = db.relationship('AgentInformation', backref='user', lazy=True, cascade="all,delete-orphan")
+    user_info = db.relationship('AgentInformation', backref='user', lazy=True)
 
 class AgentInformation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
