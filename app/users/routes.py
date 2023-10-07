@@ -4,9 +4,11 @@ from app.extensions import db, bcrypt
 from app.models.user import User
 import os
 from flask_jwt_extended import create_access_token
+# from flask_cors import cross_origin
 
 
 @bp.route('/register', methods=['POST'])
+# @cross_origin(origin='http://127.0.0.1:3000')
 def register():
     data = request.get_json()
     nom = data.get('nom')

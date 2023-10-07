@@ -15,8 +15,11 @@ def create_app(config_class=Config):
     jwt.init_app(app)
 
     # Register blueprints here
-    from app.main import bp as main_bp
-    app.register_blueprint(main_bp)
+    from app.files import bp as files_bp
+    app.register_blueprint(files_bp)
+
+    from app.users import bp as users_bp
+    app.register_blueprint(users_bp)
 
     from app.chats import bp as chats_bp
     app.register_blueprint(chats_bp)
