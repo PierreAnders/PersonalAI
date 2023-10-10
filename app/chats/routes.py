@@ -11,8 +11,8 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 import openai
-from dotenv import load_dotenv
 # import datetime
+from dotenv import load_dotenv
 
 load_dotenv()
 

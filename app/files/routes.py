@@ -17,6 +17,7 @@ def upload_file():
     else:
         return jsonify({"message": "Aucun fichier n'a été téléchargé."})
     
+
 @bp.route('/list_files', methods=['GET'])
 @jwt_required()
 def list_user_files():
@@ -29,6 +30,7 @@ def list_user_files():
     else:
         return jsonify({"message": "Le dossier 'data/user_id' n'existe pas ou est vide."}), 404
     
+
 @bp.route('/read_user_file/<filename>', methods=['GET'])
 @jwt_required()
 def read_user_file(filename):
@@ -42,6 +44,7 @@ def read_user_file(filename):
     else:
         return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
     
+
 @bp.route('/delete_user_file/<filename>', methods=['DELETE'])
 @jwt_required()
 def delete_user_file(filename):
@@ -55,11 +58,13 @@ def delete_user_file(filename):
     else:
         return jsonify({"message": f"Le fichier {filename} n'a pas été trouvé."}), 404
 
+
 @bp.route('/download_user_file/<filename>', methods=['GET'])
 @jwt_required()
 def download_user_file(filename):
     user_id = get_jwt_identity()
-    user_data_folder = f'data/{user_id}/'
+    root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+    user_data_folder = os.path.join(root_path, 'data', user_id)
     file_path = os.path.join(user_data_folder, filename)
     
     if os.path.exists(file_path) and os.path.isfile(file_path):
