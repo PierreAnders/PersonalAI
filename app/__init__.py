@@ -24,8 +24,4 @@ def create_app(config_class=Config):
     from app.chats import bp as chats_bp
     app.register_blueprint(chats_bp)
 
-    @app.route('/test/')
-    def test_page():
-        return '<h1>Testing the Flask Application Factory Pattern</h1>'
-
     return app
