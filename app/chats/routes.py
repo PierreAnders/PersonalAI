@@ -45,7 +45,7 @@ def chat():
         index = VectorstoreIndexCreator().from_loaders(loaders)
 
     chain = ConversationalRetrievalChain.from_llm(
-        llm=ChatOpenAI(model="gpt-3.5-turbo"), # gpt-3.5-turbo-16k, gpt-4 ...
+        llm=ChatOpenAI(model="gpt-4"), # gpt-3.5-turbo, gpt-3.5-turbo-16k, gpt-4 ...
         retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),)
 
     data = request.get_json()
