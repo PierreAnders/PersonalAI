@@ -23,5 +23,8 @@ def create_app(config_class=Config):
 
     from app.chats import bp as chats_bp
     app.register_blueprint(chats_bp)
+   
+    from app.healths import bp as healths_bp
+    app.register_blueprint(healths_bp)
 
     return app
