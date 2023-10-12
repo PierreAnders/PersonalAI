@@ -8,7 +8,8 @@ class Expense(db.Model):
     price = db.Column(db.Numeric(10,2), nullable=True)
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
 
-    def __init__(self, title, description, price):
+    def __init__(self, title, description, price, user_id):
         self.title = title
         self.description = description
         self.price = price
+        self.user_id = user_id
