@@ -27,4 +27,7 @@ def create_app(config_class=Config):
     from app.healths import bp as healths_bp
     app.register_blueprint(healths_bp)
 
+    from app.expenses import bp as expenses_bp
+    app.register_blueprint(expenses_bp)
+
     return app
