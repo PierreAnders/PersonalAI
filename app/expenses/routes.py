@@ -28,7 +28,6 @@ def add_expense():
         return jsonify({"message": "Erreur de base de données : " + str(e)}), 500
 
 
-
 @bp.route('/expenses/<int:expense_id>', methods=['DELETE'])
 @jwt_required()
 def delete_expense(expense_id):
@@ -46,6 +45,7 @@ def delete_expense(expense_id):
     except IntegrityError as e:
         db.session.rollback()
         return jsonify({"message": "Erreur de base de données : " + str(e)}), 500
+    
     
 @bp.route('/expenses', methods=['GET'])
 @jwt_required()
