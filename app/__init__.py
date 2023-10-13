@@ -29,5 +29,8 @@ def create_app(config_class=Config):
 
     from app.expenses import bp as expenses_bp
     app.register_blueprint(expenses_bp)
+   
+    from app.incomes import bp as incomes_bp
+    app.register_blueprint(incomes_bp)
 
     return app
