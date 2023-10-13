@@ -4,6 +4,7 @@ from app.extensions import db, bcrypt
 from app.models.user import User
 import os
 from flask_jwt_extended import create_access_token
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
 def create_user_folder(user_id):
@@ -54,3 +55,20 @@ def login():
     access_token = create_access_token(identity=user.id)
 
     return jsonify({'access_token': access_token})
+
+
+@bp.route('/user', methods=['GET'])
+@jwt_required()
+def get_user_info():
+    user_id = get_jwt_identity()
+    user_info = User.query.filter_by(id=user_id).first()
+    if user_info:
+        return jsonify({
+            "firstname":user_info.firstname,
+            "lastname":user_info.lastname,
+            "birth_date":user_info.birth_date,
+            "email":user_info.email,
+        }), 200
+    else:
+        return jsonify({"message": "Aucune information utilisateur trouvée"}), 404
+    
