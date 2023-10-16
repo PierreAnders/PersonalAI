@@ -39,11 +39,15 @@ from app.models.user import User
 from app.models.expense import Expense
 from app.models.income import Income
 from app.models.health import Health
+from app.models.folder import Folder
+from app.models.file import File
 
 target_metadata = User.metadata
 target_metadata = Expense.metadata
 target_metadata = Income.metadata
 target_metadata = Health.metadata
+target_metadata = Folder.metadata
+target_metadata = File.metadata
 
 config.set_main_option('sqlalchemy.url', get_engine_url())
 target_db = current_app.extensions['migrate'].db
