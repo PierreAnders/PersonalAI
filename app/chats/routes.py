@@ -33,7 +33,9 @@ def chat():
     else:
       user_id = get_jwt_identity()
       user_data_folder = f'data/{user_id}/'
-      subdirs = glob(user_data_folder)
+      # subdirs = glob(user_data_folder)
+      subdirs = [folder.path for folder in os.scandir(user_data_folder) if folder.is_dir()]
+
 
       loaders = []
       for subdir in subdirs:
