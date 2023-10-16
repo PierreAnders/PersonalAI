@@ -33,4 +33,7 @@ def create_app(config_class=Config):
     from app.incomes import bp as incomes_bp
     app.register_blueprint(incomes_bp)
 
+    from app.folders import bp as folders_bp
+    app.register_blueprint(folders_bp)
+
     return app
