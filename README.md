@@ -37,3 +37,32 @@ en cas d'installation d'un nouveau package :
 
 ```
 pip3 freeze > requirements.txt
+```
+
+### Installing postgresql
+
+```
+brew install postgresql 
+brew services start postgresql
+
+```
+
+
+
+### Initializing the database
+
+```
+flask db init  # Initialise le dossier des migrations
+flask db migrate -m "Initial migration."  # Crée la première migration
+flask db upgrade  # Applique la migration et crée la base de données
+```
+
+#### Gestion des migrations
+
+À chaque fois que vous apportez des modifications à vos modèles, vous devrez créer une nouvelle migration et l'appliquer :
+```
+flask db migrate -m "Description of the changes."
+flask db upgrade
+```
+À ce stade, votre base de données devrait être initialisée. Si vous utilisez SQLite, vous devriez voir un fichier site.db (ou tout autre nom que vous avez choisi) dans le répertoire racine de votre projet.
+
