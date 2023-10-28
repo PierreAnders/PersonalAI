@@ -1,3 +1,23 @@
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+
+
+# Virtual environments
+*.venv
+venv/
+ENV/
+personal_ai_env
+
 .env
+
+.idea/*
+
+
+## app specific folder
 /data/
-node_modules/
