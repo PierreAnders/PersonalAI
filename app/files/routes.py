@@ -2,8 +2,8 @@ from app.files import bp
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import request, jsonify, send_file
 from app.extensions import db
-from app.models.file import File
-from app.models.folder import Folder  # Assurez-vous d'importer le modèle Folder
+from app.files.model import File
+from app.folders.model import Folder
 import os 
 
 @bp.route('/upload/<folder_name>', methods=['POST'])

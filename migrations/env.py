@@ -35,12 +35,12 @@ def get_engine_url():
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
-from app.models.user import User
-from app.models.expense import Expense
-from app.models.income import Income
-from app.models.health import Health
-from app.models.folder import Folder
-from app.models.file import File
+from app.users.model import User
+from app.expenses.model import Expense
+from app.incomes.model import Income
+from app.healths.model import Health
+from app.folders.model import Folder
+from app.files.model import File
 
 target_metadata = User.metadata
 target_metadata = Expense.metadata

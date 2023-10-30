@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from app.users import bp
 from app.extensions import db, bcrypt
-from app.models.user import User
+from app.users.model import User
 import os
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import jwt_required, get_jwt_identity
