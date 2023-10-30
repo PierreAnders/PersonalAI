@@ -19,7 +19,7 @@ def create_user_folder(user_id):
         print(f"Une erreur s'est produite lors de la création du dossier : {str(e)}")
 
 
-@bp.route('/register', methods=['POST'])
+@bp.route('/users/register', methods=['POST'])
 def register():
     data = request.get_json()
     firstname = data.get('firstname')
@@ -42,7 +42,7 @@ def register():
     return jsonify({'message': 'Inscription réussie'}), 201
 
 
-@bp.route('/login', methods=['POST'])
+@bp.route('/users/login', methods=['POST'])
 def login():
     data = request.get_json()
     email = data.get('email')
@@ -58,7 +58,7 @@ def login():
     return jsonify({'access_token': access_token})
 
 
-@bp.route('/user', methods=['GET'])
+@bp.route('/users/info', methods=['GET'])
 @jwt_required()
 def get_user_info():
     user_id = get_jwt_identity()
@@ -74,9 +74,9 @@ def get_user_info():
         return jsonify({"message": "Aucune information utilisateur trouvée"}), 404
     
 
-@bp.route('/user', methods=['POST'])
+@bp.route('/users/update', methods=['PATCH'])
 @jwt_required()
-def add_or_update_health_info():
+def update_user_info():
     data = request.get_json()
     firstname = data.get('firstname')
     lastname = data.get('lastname')
