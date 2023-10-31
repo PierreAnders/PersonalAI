@@ -1,6 +1,6 @@
 from app.folders import bp 
 from app.extensions import db
-from app.models.folder import Folder 
+from app.folders.model import Folder 
 import os
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import request, jsonify 

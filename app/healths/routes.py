@@ -1,6 +1,6 @@
 from app.healths import bp
 from app.extensions import db
-from app.models.health import Health
+from app.healths.model import Health
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import request, jsonify
 from sqlalchemy.exc import IntegrityError
@@ -57,7 +57,6 @@ def get_health_info():
     user_id = get_jwt_identity()
     health_info = Health.query.filter_by(user_id=user_id).first()
     if health_info:
-        # Vous pouvez personnaliser le format de la réponse JSON selon vos besoins
         return jsonify({
             "gender": health_info.gender,
             "weight": health_info.weight,
@@ -68,28 +67,3 @@ def get_health_info():
         }), 200
     else:
         return jsonify({"message": "Aucune information de santé trouvée"}), 404
-
-
-# @bp.route('/user_health', methods=['PUT'])
-# @jwt_required()
-# def update_health_info():
-#     user_id = get_jwt_identity()
-#     health_info = Health.query.filter_by(user_id=user_id).first()
-
-#     if not health_info:
-#         return jsonify({"message": "Aucune information de santé trouvée"}), 404
-
-#     data = request.get_json()
-#     health_info.gender = data.get("gender")
-#     health_info.weight = data.get("weight")
-#     health_info.size = data.get("size")
-#     health_info.social_security_number = data.get("social_security_number")
-#     health_info.blood_group = data.get("blood_group")
-#     health_info.doctor = data.get("doctor")
-
-#     try:
-#         db.session.commit()
-#         return jsonify({"message": "Informations de santé mises à jour avec succès"}), 200
-#     except IntegrityError as e:
-#         db.session.rollback()
-#         return jsonify({"message": "Erreur de base de données : " + str(e)}), 500

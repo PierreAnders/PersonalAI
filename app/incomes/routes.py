@@ -1,6 +1,6 @@
 from app.incomes import bp 
 from app.extensions import db
-from app.models.income import Income 
+from app.incomes.model import Income 
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import request, jsonify 
 from sqlalchemy.exc import IntegrityError

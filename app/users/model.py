@@ -1,7 +1,7 @@
 from app.extensions import db
-from app.models.expense import Expense
-from app.models.income import Income
-from app.models.health import Health
+from app.expenses.model import Expense
+from app.incomes.model import Income
+from app.healths.model import Health
 import uuid
 
 class User(db.Model):
@@ -12,6 +12,7 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     date_de_creation = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
+    
     user_expense = db.relationship('Expense', backref='user', lazy=True)
     user_income = db.relationship('Income', backref='user', lazy=True)
     user_health = db.relationship('Health', backref='user', lazy=True)

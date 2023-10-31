@@ -1,3 +1,37 @@
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+
+
+# Virtual environments
+*.venv
+venv/
+ENV/
+personal_ai_env
+
 .env
+
+# IDE - En fonction de l'IDE que vous utilisez
+.idea/
+.vscode/
+*.swp
+*.swo
+.idea/*
+
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+## app specific folder
 /data/
-node_modules/

@@ -1,6 +1,6 @@
 from app.expenses import bp 
 from app.extensions import db
-from app.models.expense import Expense 
+from app.expenses.model import Expense 
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import request, jsonify 
 from sqlalchemy.exc import IntegrityError
