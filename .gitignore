@@ -1,37 +1,28 @@
-
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*.pyo
-*.egg-info/
-dist/
-build/
-
-
-# Virtual environments
-*.venv
-venv/
-ENV/
-personal_ai_env
-
-.env
-
-# IDE - En fonction de l'IDE que vous utilisez
-.idea/
-.vscode/
-*.swp
-*.swo
-.idea/*
-
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
 ## app specific folder
 /data/
+
+.DS_Store
+.env
+.flaskenv
+*.pyc
+*.pyo
+env/
+venv/
+.venv/
+env*
+dist/
+build/
+*.egg
+*.egg-info/
+.tox/
+.cache/
+.pytest_cache/
+.idea/
+docs/_build/
+.vscode
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+*,cover

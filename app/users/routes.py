@@ -6,6 +6,7 @@ import os
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy.exc import IntegrityError
+from datetime import datetime
 
 
 def create_user_folder(user_id):
@@ -64,23 +65,26 @@ def get_user_info():
     user_id = get_jwt_identity()
     user_info = User.query.filter_by(id=user_id).first()
     if user_info:
+        # Convertissez la date de naissance en une chaîne au format 'YYYY-MM-DD'
+        birth_date_str = user_info.birth_date.strftime('%Y-%m-%d') if user_info.birth_date else None
+
         return jsonify({
-            "firstname":user_info.firstname,
-            "lastname":user_info.lastname,
-            "birth_date":user_info.birth_date,
-            "email":user_info.email,
+            "firstname": user_info.firstname,
+            "lastname": user_info.lastname,
+            "birth_date": birth_date_str,  # Renvoie la date au format 'YYYY-MM-DD'
+            "email": user_info.email,
         }), 200
     else:
         return jsonify({"message": "Aucune information utilisateur trouvée"}), 404
     
 
-@bp.route('/users/update', methods=['PATCH'])
+@bp.route('/users/update', methods=['PUT'])
 @jwt_required()
 def update_user_info():
     data = request.get_json()
     firstname = data.get('firstname')
     lastname = data.get('lastname')
-    birth_date = data.get('birth_date')
+    birth_date_str = data.get('birth_date')  # La date en tant que chaîne
     email = data.get('email')
 
     user_id = get_jwt_identity()
@@ -89,13 +93,19 @@ def update_user_info():
 
     user_info.firstname = firstname
     user_info.lastname = lastname
-    user_info.birth_date = birth_date
+
+    # Convertissez la chaîne de date en objet de date
+    try:
+        user_info.birth_date = datetime.strptime(birth_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({"message": "Format de date invalide"}), 400
+
     user_info.email = email
-       
+
     try:
         db.session.add(user_info)
         db.session.commit()
-        return jsonify({"message": "Informations de santé enregistrées avec succès"}), 201
+        return jsonify({"message": "Informations mises à jour avec succès"}), 201
     except IntegrityError as e:
         db.session.rollback()
         return jsonify({"message": "Erreur de base de données : " + str(e)}), 500
