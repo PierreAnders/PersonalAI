@@ -6,7 +6,7 @@ import os
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy.exc import IntegrityError
-from datetime import datetime
+from datetime import timedelta, datetime
 
 
 def create_user_folder(user_id):
@@ -54,7 +54,7 @@ def login():
     if not user or not bcrypt.check_password_hash(user.password, password):
         return jsonify({'message': 'Email ou mot de passe incorrect'}), 401
 
-    access_token = create_access_token(identity=user.id)
+    access_token = create_access_token(identity=user.id, expires_delta=timedelta(days=1))
 
     return jsonify({'access_token': access_token})
 

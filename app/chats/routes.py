@@ -18,9 +18,9 @@ load_dotenv()
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-@bp.route('/AIchatWithData', methods=['POST'])
+@bp.route('/AIchatWithData/<model>', methods=['POST'])
 @jwt_required()
-def chat():
+def chat(model):
     
     # Création de l'historique de chat
     chat_histories = {}
@@ -71,7 +71,7 @@ def chat():
     # search_kwarks indique que seul un résultat doit être extrait.
 
     chain = ConversationalRetrievalChain.from_llm(
-        llm=ChatOpenAI(model="gpt-4"), # or gpt-3.5-turbo, gpt-3.5-turbo-16k ...
+        llm=ChatOpenAI(model=model), # or gpt-3.5-turbo, gpt-3.5-turbo-16k ...
         retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),)
 
     # Extraire et parser le contenu du JSON dans data
@@ -101,9 +101,9 @@ def chat():
     # Retourne la réponse générée par la chaine sous forme de JSON
     return jsonify(result)
 
-@bp.route('/AIchatGeneric', methods=['POST'])
+@bp.route('/AIchatGeneric/<model>', methods=['POST'])
 @jwt_required()
-def chat_generic():
+def chat_generic(model):
     
     chat_histories = {}
 
@@ -117,7 +117,7 @@ def chat_generic():
     messages = [{"role": "user", "content": msg} for msg, _ in chat_history]
 
     response = openai.ChatCompletion.create(
-        model="gpt-4",
+        model=model,
         messages=messages)
 
     assistant_reply = response["choices"][0]["message"]["content"]
