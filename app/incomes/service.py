@@ -2,7 +2,8 @@ from app.extensions import db
 from app.incomes.model import Income
 from sqlalchemy.exc import IntegrityError
 
-def add_income(title, description, price, user_id):
+
+def add_income_service(title, description, price, user_id):
     income = Income(title=title, description=description, price=price, user_id=user_id)
     try:
         db.session.add(income)
@@ -13,7 +14,8 @@ def add_income(title, description, price, user_id):
         error_message = "Erreur de base de données lors de l'ajout de la recette : " + str(e)
         return {"message": error_message}, 500
 
-def delete_income(income_id, user_id):
+
+def delete_income_service(income_id, user_id):
     income = Income.query.filter_by(id=income_id, user_id=user_id).first()
     if not income:
         return {"message": "Recette non trouvée ou non autorisée"}, 404
@@ -25,7 +27,8 @@ def delete_income(income_id, user_id):
         db.session.rollback()
         return {"message": "Erreur de base de données : " + str(e)}, 500
 
-def get_all_incomes(user_id):
+
+def get_all_incomes_service(user_id):
     incomes = Income.query.filter_by(user_id=user_id).all()
     incomes_data = []
     for income in incomes:

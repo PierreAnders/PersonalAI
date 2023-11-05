@@ -16,7 +16,7 @@ def create_user_folder(user_id):
         print(f"Une erreur s'est produite lors de la création du dossier : {str(e)}")
 
 
-def register_user(data):
+def register_user_service(data):
     firstname = data.get('firstname')
     lastname = data.get('lastname')
     birth_date = data.get('birth_date')
@@ -33,7 +33,7 @@ def register_user(data):
     return new_user
 
 
-def login_user(data):
+def login_user_service(data):
     email = data.get('email')
     password = data.get('password')
 
@@ -42,13 +42,13 @@ def login_user(data):
     return user
 
 
-def get_user_by_id(user_id):
+def get_user_by_id_service(user_id):
     user = User.query.filter_by(id=user_id).first()
 
     return user
 
 
-def update_user(user, data):
+def update_user_service(user, data):
     firstname = data.get('firstname')
     lastname = data.get('lastname')
     birth_date_str = data.get('birth_date')

@@ -3,7 +3,7 @@ from app.expenses.model import Expense
 from sqlalchemy.exc import IntegrityError
 
 
-def add_expense(title, description, price, user_id):
+def add_expense_service(title, description, price, user_id):
     expense = Expense(title=title, description=description, price=price, user_id=user_id)
     try:
         db.session.add(expense)
@@ -15,7 +15,7 @@ def add_expense(title, description, price, user_id):
         return {"message": error_message}, 500
 
 
-def delete_expense(expense_id, user_id):
+def delete_expense_service(expense_id, user_id):
     expense = Expense.query.filter_by(id=expense_id, user_id=user_id).first()
     if not expense:
         return {"message": "Dépense non trouvée ou non autorisée"}, 404
@@ -28,7 +28,7 @@ def delete_expense(expense_id, user_id):
         return {"message": "Erreur de base de données : " + str(e)}, 500
 
 
-def get_all_expenses(user_id):
+def get_all_expenses_service(user_id):
     expenses = Expense.query.filter_by(user_id=user_id).all()
     expenses_data = []
     for expense in expenses:

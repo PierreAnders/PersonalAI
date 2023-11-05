@@ -4,7 +4,7 @@ from app.users import bp
 from app.extensions import bcrypt
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.users.service import login_user, register_user, get_user_by_id, update_user
+from app.users.service import login_user_service, register_user_service, get_user_by_id_service, update_user_service
 from sqlalchemy.exc import IntegrityError
 
 
@@ -16,7 +16,7 @@ def register():
         return jsonify({'message': 'Veuillez fournir l\'email et le mot de passe'}), 400
 
     try:
-        new_user = register_user(data)
+        new_user = register_user_service(data)
         return jsonify({'message': 'Inscription réussie'}), 201
     except IntegrityError as e:
         return jsonify({"message": "Erreur de base de données : " + str(e)}), 500 
@@ -25,7 +25,7 @@ def register():
 @bp.route('/users/login', methods=['POST'])
 def login():
     data = request.get_json()
-    user = login_user(data)
+    user = login_user_service(data)
 
     if not user or not bcrypt.check_password_hash(user.password, data.get('password')):
         return jsonify({'message': 'Email ou mot de passe incorrect'}), 401
@@ -39,7 +39,7 @@ def login():
 @jwt_required()
 def get_user_info():
     user_id = get_jwt_identity()
-    user = get_user_by_id(user_id)
+    user = get_user_by_id_service(user_id)
 
     if user:
         birth_date_str = user.birth_date.strftime('%Y-%m-%d') if user.birth_date else None
@@ -59,7 +59,7 @@ def get_user_info():
 def update_user_info():
     data = request.get_json()
     user_id = get_jwt_identity()
-    user = get_user_by_id(user_id)
+    user = get_user_by_id_service(user_id)
 
     if not user:
         return jsonify({"message": "Utilisateur non trouvé"}), 404
