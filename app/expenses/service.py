@@ -2,6 +2,7 @@ from app.extensions import db
 from app.expenses.model import Expense
 from sqlalchemy.exc import IntegrityError
 
+
 def add_expense(title, description, price, user_id):
     expense = Expense(title=title, description=description, price=price, user_id=user_id)
     try:
@@ -12,6 +13,7 @@ def add_expense(title, description, price, user_id):
         db.session.rollback()
         error_message = "Erreur de base de données lors de l'ajout de la dépense : " + str(e)
         return {"message": error_message}, 500
+
 
 def delete_expense(expense_id, user_id):
     expense = Expense.query.filter_by(id=expense_id, user_id=user_id).first()
@@ -24,6 +26,7 @@ def delete_expense(expense_id, user_id):
     except IntegrityError as e:
         db.session.rollback()
         return {"message": "Erreur de base de données : " + str(e)}, 500
+
 
 def get_all_expenses(user_id):
     expenses = Expense.query.filter_by(user_id=user_id).all()
