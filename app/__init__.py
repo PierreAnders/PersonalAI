@@ -37,6 +37,9 @@ def create_app(config_class=Config):
     from app.folders import bp as folders_bp
     app.register_blueprint(folders_bp)
 
+    from app.code import bp as code_bp
+    app.register_blueprint(code_bp)
+    
     @app.route('/')
     def index():
         return "Welcome to the Personal AI API!"

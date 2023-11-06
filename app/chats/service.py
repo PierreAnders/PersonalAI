@@ -17,6 +17,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 chat_histories = {}
 
+
 def chat(model, data):
     PERSIST = False
 
@@ -34,6 +35,7 @@ def chat(model, data):
 
     return result
 
+
 def get_or_create_index(persist):
     if persist and os.path.exists("persist"):
         vectorstore = Chroma(persist_directory="persist", embedding_function=OpenAIEmbeddings())
@@ -49,6 +51,7 @@ def get_or_create_index(persist):
             index = VectorstoreIndexCreator().from_loaders(loaders)
     return index
 
+
 def create_conversational_chain(model, index):
     chain = ConversationalRetrievalChain.from_llm(
         llm=ChatOpenAI(model=model),
@@ -56,13 +59,16 @@ def create_conversational_chain(model, index):
     )
     return chain
 
+
 def get_chat_history(session_id, chat_histories):
     chat_history = chat_histories.get(session_id, [])
     return chat_history
 
+
 def generate_response(chain, query, chat_history):
     result = chain({"question": query, "chat_history": chat_history})
     return result
+
 
 def update_chat_history(session_id, chat_history, query, answer):
     chat_history.append((query, answer))
