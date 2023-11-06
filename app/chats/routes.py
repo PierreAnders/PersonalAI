@@ -4,13 +4,13 @@
 from app.chats import bp
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required
-from app.chats.service import chat
+from app.chats.service import chat_with_data_service
 
-@bp.route('/AIchatWithData/<model>', methods=['POST'])
+@bp.route('/chatWithData/<model>', methods=['POST'])
 @jwt_required()
-def chat_route(model):
+def chat_with_data(model):
     data = request.get_json()
-    result = chat(model, data)
+    result = chat_with_data_service(model, data)
     return jsonify(result)
 
 ###################

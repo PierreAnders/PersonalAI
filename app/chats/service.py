@@ -18,7 +18,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 chat_histories = {}
 
 
-def chat(model, data):
+def chat_with_data_service(model, data):
     PERSIST = False
 
     index = get_or_create_index(PERSIST)
