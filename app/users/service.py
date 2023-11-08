@@ -17,20 +17,6 @@ def create_user_folder(user_id):
         print(f"Une erreur s'est produite lors de la création du dossier : {str(e)}")
 
 
-# def write_user_data(user_id, data):
-#     user_subfolder_info = os.path.join('data', str(user_id), 'user')
-#     try:
-#         os.makedirs(user_subfolder_info, exist_ok=True)
-#         print(f"Dossier '{user_subfolder_info}' créé avec succès.")
-#     except FileExistsError:
-#         print(f"Le dossier '{user_subfolder_info}' existe déjà.")
-#     except Exception as e:
-#         print(f"Une erreur s'est produite lors de la création du dossier : {str(e)}")
-#     file_path = os.path.join(user_subfolder_info, 'user.txt')
-#     with open(file_path, 'w') as file:
-#         user = data
-#         file.write(str(data))
-
 def write_user_data(user_id, data):
     user_subfolder_info_db = os.path.join('data', str(user_id), f"info-{user_id}")
     try:
@@ -70,7 +56,6 @@ def login_user_service(data):
     password = data.get('password')
 
     user = User.query.filter_by(email=email).first()
-
     return user
 
 

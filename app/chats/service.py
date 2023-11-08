@@ -27,8 +27,30 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 chat_histories = {}
 print("chat_histories", chat_histories)
 
+
+def write_date(user_id):
+    user_subfolder_info_db = os.path.join('data', str(user_id), f"info-{user_id}")
+    try:
+        os.makedirs(user_subfolder_info_db, exist_ok=True)
+        print(f"Dossier '{user_subfolder_info_db}' créé avec succès.")
+    except FileExistsError:
+        print(f"Le dossier '{user_subfolder_info_db}' existe déjà.")
+    except Exception as e:
+        print(f"Une erreur s'est produite lors de la création du dossier : {str(e)}")
+    file_path = os.path.join(user_subfolder_info_db, 'date.txt')
+    print(datetime.date.today())
+    current_date = datetime.date.today().strftime('%Y-%m-%d')
+    print(current_date)
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.write(f"INFORMATIONS DU JOUR:\n\n")
+        file.write(f"Nous sommes aujourd'hui le {current_date}")
+        
+
 def chat_with_data_service(model, data):
     PERSIST = False
+
+    user_id = get_jwt_identity()
+    write_date(user_id)
 
     # Récupération ou création de l'index
     index = get_or_create_index(PERSIST)
@@ -44,8 +66,6 @@ def chat_with_data_service(model, data):
     print('session_id :', session_id)
     query = data.get("query")
     print('query :', query)
-
-    user_id = get_jwt_identity()
 
     # Récupération de l'historique de la session
     chat_history = get_chat_history(session_id, chat_histories)

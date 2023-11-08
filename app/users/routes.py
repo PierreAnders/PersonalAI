@@ -31,7 +31,6 @@ def login():
         return jsonify({'message': 'Email ou mot de passe incorrect'}), 401
 
     access_token = create_access_token(identity=user.id, expires_delta=timedelta(days=1))
-
     return jsonify({'access_token': access_token})
 
 
