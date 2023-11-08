@@ -31,7 +31,6 @@ def login():
         return jsonify({'message': 'Email ou mot de passe incorrect'}), 401
 
     access_token = create_access_token(identity=user.id, expires_delta=timedelta(days=1))
-
     return jsonify({'access_token': access_token})
 
 
@@ -65,10 +64,44 @@ def update_user_info():
         return jsonify({"message": "Utilisateur non trouvé"}), 404
 
     try:
-        update_user(user, data)
-        return jsonify({"message": "Informations mises à jour avec succès"}), 201
+        update_user_service(user, data)
+        return jsonify({"message": "Informations mises à jour avec succès", "user": user}), 200
     except IntegrityError as e:
         return jsonify({"message": "Erreur de base de données : " + str(e)}), 500 
+
+
+# @bp.route('/users/update', methods=['PUT'])
+# @jwt_required()
+# def update_user_info():
+#     data = request.get_json()
+#     firstname = data.get('firstname')
+#     lastname = data.get('lastname')
+#     birth_date_str = data.get('birth_date')  # La date en tant que chaîne
+#     email = data.get('email')
+
+#     user_id = get_jwt_identity()
+
+#     user_info = User.query.filter_by(id=user_id).first()
+
+#     user_info.firstname = firstname
+#     user_info.lastname = lastname
+
+#     # Convertissez la chaîne de date en objet de date
+#     try:
+#         user_info.birth_date = datetime.strptime(birth_date_str, '%Y-%m-%d').date()
+#     except ValueError:
+#         return jsonify({"message": "Format de date invalide"}), 400
+
+#     user_info.email = email
+
+#     try:
+#         db.session.add(user_info)
+#         db.session.commit()
+#         return jsonify({"message": "Informations mises à jour avec succès"}), 201
+#     except IntegrityError as e:
+#         db.session.rollback()
+#         return jsonify({"message": "Erreur de base de données : " + str(e)}), 500
+
 # from flask import request, jsonify
 # from app.users import bp
 # from app.extensions import db, bcrypt

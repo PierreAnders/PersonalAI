@@ -14,6 +14,8 @@ from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 import openai
 from dotenv import load_dotenv
+import datetime
+from app.users.model import User
 
 # chargement des variables d'environnement à partir du fichier .env
 load_dotenv()
@@ -25,8 +27,30 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 chat_histories = {}
 print("chat_histories", chat_histories)
 
+
+def write_date(user_id):
+    user_subfolder_info_db = os.path.join('data', str(user_id), f"info-{user_id}")
+    try:
+        os.makedirs(user_subfolder_info_db, exist_ok=True)
+        print(f"Dossier '{user_subfolder_info_db}' créé avec succès.")
+    except FileExistsError:
+        print(f"Le dossier '{user_subfolder_info_db}' existe déjà.")
+    except Exception as e:
+        print(f"Une erreur s'est produite lors de la création du dossier : {str(e)}")
+    file_path = os.path.join(user_subfolder_info_db, 'date.txt')
+    print(datetime.date.today())
+    current_date = datetime.date.today().strftime('%Y-%m-%d')
+    print(current_date)
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.write(f"INFORMATIONS DU JOUR:\n\n")
+        file.write(f"Nous sommes aujourd'hui le {current_date}")
+        
+
 def chat_with_data_service(model, data):
     PERSIST = False
+
+    user_id = get_jwt_identity()
+    write_date(user_id)
 
     # Récupération ou création de l'index
     index = get_or_create_index(PERSIST)
@@ -137,79 +161,81 @@ def update_chat_history(session_id, chat_history, query, answer):
     print('chat_histories[session_id] :', chat_histories[session_id])
 
 
-# # !!! CODE BON !!! 
 
-# # import os
-# # from flask_jwt_extended import get_jwt_identity
-# # from langchain.vectorstores import Chroma
-# # from langchain.indexes.vectorstore import VectorStoreIndexWrapper
-# # from glob import glob
-# # from langchain.document_loaders import DirectoryLoader
-# # from langchain.indexes import VectorstoreIndexCreator
-# # from langchain.chains import ConversationalRetrievalChain
-# # from langchain.chat_models import ChatOpenAI
-# # from langchain.embeddings import OpenAIEmbeddings
-# # import openai
-# # from dotenv import load_dotenv
+# !!! CODE BON !!! 
 
-# # load_dotenv()
+# import os
+# from flask_jwt_extended import get_jwt_identity
+# from langchain.vectorstores import Chroma
+# from langchain.indexes.vectorstore import VectorStoreIndexWrapper
+# from glob import glob
+# from langchain.document_loaders import DirectoryLoader
+# from langchain.indexes import VectorstoreIndexCreator
+# from langchain.chains import ConversationalRetrievalChain
+# from langchain.chat_models import ChatOpenAI
+# from langchain.embeddings import OpenAIEmbeddings
+# import openai
+# from dotenv import load_dotenv
 
-# # openai.api_key = os.getenv("OPENAI_API_KEY")
+# load_dotenv()
 
-# # chat_histories = {}
+# openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# # def chat_with_data_service(model, data):
-# #     PERSIST = False
+# chat_histories = {}
 
-# #     index = get_or_create_index(PERSIST)
+# def chat_with_data_service(model, data):
+#     PERSIST = False
 
-# #     chain = create_conversational_chain(model, index)
+#     index = get_or_create_index(PERSIST)
 
-# #     session_id = data.get("session_id")
-# #     query = data.get("query")
+#     chain = create_conversational_chain(model, index)
 
-# #     chat_history = get_chat_history(session_id, chat_histories)
-# #     result = generate_response(chain, query, chat_history)
+#     session_id = data.get("session_id")
+#     query = data.get("query")
 
-# #     update_chat_history(session_id, chat_history, query, result['answer'])
+#     chat_history = get_chat_history(session_id, chat_histories)
+#     result = generate_response(chain, query, chat_history)
 
-# #     return result
+#     update_chat_history(session_id, chat_history, query, result['answer'])
 
-
-# # def get_or_create_index(persist):
-# #     if persist and os.path.exists("persist"):
-# #         vectorstore = Chroma(persist_directory="persist", embedding_function=OpenAIEmbeddings())
-# #         index = VectorStoreIndexWrapper(vectorstore=vectorstore)
-# #     else:
-# #         user_id = get_jwt_identity()
-# #         user_data_folder = f'data/{user_id}/'
-# #         subdirs = [folder.path for folder in os.scandir(user_data_folder) if folder.is_dir()]
-# #         loaders = [DirectoryLoader(subdir) for subdir in subdirs]
-# #         if persist:
-# #             index = VectorstoreIndexCreator(vectorstore_kwargs={"persist_directory":"persist"}).from_loaders(loaders)
-# #         else:
-# #             index = VectorstoreIndexCreator().from_loaders(loaders)
-# #     return index
+#     return result
 
 
-# # def create_conversational_chain(model, index):
-# #     chain = ConversationalRetrievalChain.from_llm(
-# #         llm=ChatOpenAI(model=model),
-# #         retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),
-# #     )
-# #     return chain
+# def get_or_create_index(persist):
+#     if persist and os.path.exists("persist"):
+#         vectorstore = Chroma(persist_directory="persist", embedding_function=OpenAIEmbeddings())
+#         index = VectorStoreIndexWrapper(vectorstore=vectorstore)
+#     else:
+#         user_id = get_jwt_identity()
+#         user_data_folder = f'data/{user_id}/'
+#         subdirs = [folder.path for folder in os.scandir(user_data_folder) if folder.is_dir()]
+#         loaders = [DirectoryLoader(subdir) for subdir in subdirs]
+#         if persist:
+#             index = VectorstoreIndexCreator(vectorstore_kwargs={"persist_directory":"persist"}).from_loaders(loaders)
+#         else:
+#             index = VectorstoreIndexCreator().from_loaders(loaders)
+#     return index
 
 
-# # def get_chat_history(session_id, chat_histories):
-# #     chat_history = chat_histories.get(session_id, [])
-# #     return chat_history
+# def create_conversational_chain(model, index):
+#     chain = ConversationalRetrievalChain.from_llm(
+#         llm=ChatOpenAI(model=model),
+#         retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),
+#     )
+#     return chain
 
 
-# # def generate_response(chain, query, chat_history):
-# #     result = chain({"question": query, "chat_history": chat_history})
-# #     return result
+# def get_chat_history(session_id, chat_histories):
+#     chat_history = chat_histories.get(session_id, [])
+#     return chat_history
 
 
-# # def update_chat_history(session_id, chat_history, query, answer):
-# #     chat_history.append((query, answer))
-# #     chat_histories[session_id] = chat_history
+# def generate_response(chain, query, chat_history):
+#     result = chain({"question": query, "chat_history": chat_history})
+#     return result
+
+
+# def update_chat_history(session_id, chat_history, query, answer):
+#     chat_history.append((query, answer))
+#     chat_histories[session_id] = chat_history
+
