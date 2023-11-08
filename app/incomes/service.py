@@ -1,6 +1,25 @@
+import os
 from app.extensions import db
 from app.incomes.model import Income
 from sqlalchemy.exc import IntegrityError
+
+def write_user_data(user_id):
+    user_subfolder_info_db = os.path.join('data', str(user_id), f"info-{user_id}")
+    try:
+        os.makedirs(user_subfolder_info_db, exist_ok=True)
+        print(f"Dossier '{user_subfolder_info_db}' créé avec succès.")
+    except FileExistsError:
+        print(f"Le dossier '{user_subfolder_info_db}' existe déjà.")
+    except Exception as e:
+        print(f"Une erreur s'est produite lors de la création du dossier : {str(e)}")
+    file_path = os.path.join(user_subfolder_info_db, 'incomes.txt')
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.write(f"RECETTES MENSUELLES DE L'UTILISATEUR:\n\n")
+        incomes = Income.query.filter_by(user_id=user_id).all()
+        income_number = 0
+        for income in incomes:
+            income_number += 1
+            file.write(f"Dépense {income_number}: {income.title}, {income.description}, {income.price} euros\n")
 
 
 def add_income_service(title, description, price, user_id):
