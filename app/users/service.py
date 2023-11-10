@@ -31,7 +31,7 @@ def write_user_data(user_id, data):
 
     try:
         with open(file_path, 'w', encoding='utf-8') as file:
-            file.write("INFORMATIONS GENERALES DE L'UTILISATEUR:\n\n")
+            file.write("MES INFORMATIONS GENERALES :\n\n")
             file.write(f"Je m'appelle {data['firstname']} {data['lastname']}.\n")
             file.write(f"Je suis né le {data['birth_date']}.\n")
             file.write(f"Mon adresse mail est: {data['email']}.\n")

@@ -18,7 +18,7 @@ def write_user_data(user_id):
     file_path = os.path.join(user_subfolder_info_db, 'expenses.txt')
 
     with open(file_path, 'w', encoding='utf-8') as file:
-        file.write(f"DEPENCES MENSUELLES DE L'UTILISATEUR:\n\n")
+        file.write(f"MES DEPENCES MENSUELLES :\n\n")
         expenses = Expense.query.filter_by(user_id=user_id).all()
         expense_number = 0
         for expense in expenses:

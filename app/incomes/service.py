@@ -18,7 +18,7 @@ def write_user_data(user_id):
     file_path = os.path.join(user_subfolder_info_db, 'incomes.txt')
 
     with open(file_path, 'w', encoding='utf-8') as file:
-        file.write(f"RECETTES MENSUELLES DE L'UTILISATEUR:\n\n")
+        file.write(f"MES RECETTES MENSUELLES :\n\n")
         incomes = Income.query.filter_by(user_id=user_id).all()
         income_number = 0
         for income in incomes:
