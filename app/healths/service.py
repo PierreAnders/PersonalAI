@@ -6,6 +6,7 @@ import os
 
 def write_user_data(user_id, data):
     user_subfolder_info_db = os.path.join('data', str(user_id), f"info-{user_id}")
+
     try:
         os.makedirs(user_subfolder_info_db, exist_ok=True)
         print(f"Dossier '{user_subfolder_info_db}' créé avec succès.")
@@ -15,7 +16,7 @@ def write_user_data(user_id, data):
         print(f"Une erreur s'est produite lors de la création du dossier : {str(e)}")
     file_path = os.path.join(user_subfolder_info_db, 'health.txt')
     with open(file_path, 'w', encoding='utf-8') as file:
-        file.write(f"INFORMATIONS DE SANTE DE L'UTILISATEUR:\n\n")
+        file.write(f"MES INFORMATIONS DE SANTE :\n\n")
         file.write(f"Je suis un(e) {data['gender']}.\n")
         file.write(f"Je pèse {data['weight']}.\n")
         file.write(f"Je mesure {data['size']}.\n")
@@ -57,6 +58,7 @@ def add_or_update_health_info_service(user_id, gender, weight, size, social_secu
 
 def get_health_info_service(user_id):
     health_info = Health.query.filter_by(user_id=user_id).first()
+    
     if health_info:
         return {
             "gender": health_info.gender,

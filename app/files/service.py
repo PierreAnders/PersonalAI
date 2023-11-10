@@ -10,10 +10,12 @@ import os
 def upload_file_service(folder_name):
     user_id = get_jwt_identity()
     user_data_folder = os.path.join('data', str(user_id), folder_name)
-    uploaded_file = request.files['file']
+    # Récupération du fichier téléchargé depuis la requête
+    uploaded_file = request.files.get('file') # .get pour permettre d'éviter une erreur si la clé 'file' n'est pas présente dans la requête
 
     if uploaded_file:
         file_path = os.path.join(user_data_folder, uploaded_file.filename)
+        # Sauvegarde du fichier téléchargé sur le serveur
         uploaded_file.save(file_path)
 
         folder = Folder.query.filter_by(name=folder_name, user_id=user_id).first()
@@ -34,6 +36,7 @@ def list_user_files_service(folder_name):
     user_data_folder = os.path.join('data', str(user_id), folder_name)
 
     if os.path.exists(user_data_folder) and os.path.isdir(user_data_folder):
+        # Récupération de la liste des fichiers dans le dossier de l'utilisateur
         files = os.listdir(user_data_folder)
         return jsonify({"files": files})
     else:
@@ -46,6 +49,7 @@ def delete_user_file_service(folder_name, file_name):
     file_path = os.path.join(user_data_folder, file_name)
 
     if os.path.exists(file_path) and os.path.isfile(file_path):
+        # Suppression du fichier du dossier de l'utilisateur
         os.remove(file_path)
 
         file = File.query.filter_by(url=f'/data/{user_id}/{folder_name}/{file_name}').first()
@@ -60,7 +64,8 @@ def delete_user_file_service(folder_name, file_name):
 
 def download_user_file_service(folder_name, file_name):
     user_id = get_jwt_identity()
-    root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+    # Récupération du chemin absolu du répertoire racine de l'application
+    root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) # "__file__" est une variable Python qui représente le chamin du fichier 
     user_data_folder = os.path.join(root_path, 'data', str(user_id), folder_name)
     file_path = os.path.join(user_data_folder, file_name)
 

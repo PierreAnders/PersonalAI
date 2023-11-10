@@ -12,9 +12,12 @@ def add_expense():
     description = data.get("description")
     price = data.get("price")
     user_id = get_jwt_identity()
+
     result, status_code = add_expense_service(title, description, price, user_id)
     write_user_data(user_id)
+
     return jsonify(result), status_code
+
 
 @bp.route('/expenses/<int:expense_id>', methods=['DELETE'])
 @jwt_required()
@@ -22,11 +25,14 @@ def delete_expense(expense_id):
     user_id = get_jwt_identity()
     result, status_code = delete_expense_service(expense_id, user_id)
     write_user_data(user_id)
+
     return jsonify(result), status_code
+
 
 @bp.route('/expenses', methods=['GET'])
 @jwt_required()
 def get_all_expenses():
     user_id = get_jwt_identity()
     expenses_data, status_code = get_all_expenses_service(user_id)
+
     return jsonify(expenses_data), status_code

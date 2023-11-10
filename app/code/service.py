@@ -18,11 +18,11 @@ print("chat_histories", chat_histories)
 def chat_service(model, data):
 
     # Récupération de l'identifiant de session (session_id) et le message de l'utilisateur (query) à partir des données reçues
-    # session_id est utilisé pour associer un historique de chat à chaque session d'utillisateur
+    # session_id est utilisé pour associer un historique de chat à chaque session d'utilisateur
     session_id = data.get("session_id")
     query = data.get("query")
 
-    # Vérification si l'historique de chat existe déjà pour session_id. Si non cela renvoie une liste vide
+    # Vérification si l'historique de chat existe déjà pour la session_id. Si non cela renvoie une liste vide
     chat_history = chat_histories.get(session_id, [])
     print('chat_history :', chat_history)
 

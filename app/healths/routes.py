@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import request, jsonify
 from app.healths.service import add_or_update_health_info_service, get_health_info_service, write_user_data
 
+
 @bp.route('/user_health', methods=['POST'])
 @jwt_required()
 def add_or_update_health_info():
@@ -21,9 +22,11 @@ def add_or_update_health_info():
     )
     return jsonify(result), status_code
 
+
 @bp.route('/user_health', methods=['GET'])
 @jwt_required()
 def get_health_info():
     user_id = get_jwt_identity()
     health_info, status_code = get_health_info_service(user_id)
+
     return jsonify(health_info), status_code
