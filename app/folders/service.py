@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 def create_user_subfolder(user_id, name):
     subfolder = os.path.join('data', str(user_id), name)
+
     try:
         os.mkdir(subfolder)
         print(f"Sous-dossier '{subfolder}' créé avec succès")
@@ -17,6 +18,7 @@ def create_user_subfolder(user_id, name):
 
 def delete_user_subfolder(user_id, name):
     subfolder = os.path.join('data', str(user_id), name)
+
     try:
         os.rmdir(subfolder)
         print(f"Sous-dossier '{subfolder}' supprimé avec succès")
@@ -28,6 +30,7 @@ def delete_user_subfolder(user_id, name):
 
 def add_folder_service(name, user_id):
     folder = Folder(name=name, user_id=user_id)
+
     try:
         db.session.add(folder)
         db.session.commit()
@@ -40,6 +43,7 @@ def add_folder_service(name, user_id):
 
 def delete_folder_service(folder_id, user_id):
     folder = Folder.query.filter_by(id=folder_id, user_id=user_id).first()
+
     if not folder:
         return {"message": "Dossier non trouvé ou non autorisé"}, 404
 
@@ -56,9 +60,11 @@ def delete_folder_service(folder_id, user_id):
 def get_all_folders_service(user_id):
     folders = Folder.query.filter_by(user_id=user_id).all()
     folders_data = []
+
     for folder in folders:
         folders_data.append({
             "id": folder.id,
             "name": folder.name,
         })
+        
     return folders_data, 200

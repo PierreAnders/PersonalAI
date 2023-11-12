@@ -13,6 +13,7 @@ def add_folder():
     response, status_code = add_folder_service(name, user_id)
     return jsonify(response), status_code
 
+
 @bp.route('/folders/<int:folder_id>', methods=['DELETE'])
 @jwt_required()
 def delete_folder(folder_id):

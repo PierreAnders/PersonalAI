@@ -1,10 +1,34 @@
+import os
 from app.extensions import db
 from app.expenses.model import Expense
 from sqlalchemy.exc import IntegrityError
 
 
+def write_user_data(user_id):
+    user_subfolder_info_db = os.path.join('data', str(user_id), f"info-{user_id}")
+
+    try:
+        os.makedirs(user_subfolder_info_db, exist_ok=True)
+        print(f"Dossier '{user_subfolder_info_db}' créé avec succès.")
+    except FileExistsError:
+        print(f"Le dossier '{user_subfolder_info_db}' existe déjà.")
+    except Exception as e:
+        print(f"Une erreur s'est produite lors de la création du dossier : {str(e)}")
+
+    file_path = os.path.join(user_subfolder_info_db, 'expenses.txt')
+
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.write(f"MES DEPENCES MENSUELLES :\n\n")
+        expenses = Expense.query.filter_by(user_id=user_id).all()
+        expense_number = 0
+        for expense in expenses:
+            expense_number += 1
+            file.write(f"Dépense {expense_number}: {expense.title}, {expense.description}, {expense.price} euros\n")
+
+
 def add_expense_service(title, description, price, user_id):
     expense = Expense(title=title, description=description, price=price, user_id=user_id)
+
     try:
         db.session.add(expense)
         db.session.commit()
@@ -17,6 +41,7 @@ def add_expense_service(title, description, price, user_id):
 
 def delete_expense_service(expense_id, user_id):
     expense = Expense.query.filter_by(id=expense_id, user_id=user_id).first()
+
     if not expense:
         return {"message": "Dépense non trouvée ou non autorisée"}, 404
     try:
@@ -30,6 +55,7 @@ def delete_expense_service(expense_id, user_id):
 
 def get_all_expenses_service(user_id):
     expenses = Expense.query.filter_by(user_id=user_id).all()
+
     expenses_data = []
     for expense in expenses:
         expenses_data.append({
