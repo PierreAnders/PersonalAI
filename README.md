@@ -7,7 +7,7 @@
 ## Installation
 
 
-To get started, you will need Python3 installed: https://www.python.org/downloads/ 
+To get started, you will need Python 3.11 installed: https://www.python.org/downloads/ 
 (Don't forget to choose "Add python.exe" to PATH at the begining of the installation on Windows).
 If you don't have any Relational Database Management System, you can install PostgreSQL and PgAdmin here : https://www.postgresql.org/download/windows/ 
 
