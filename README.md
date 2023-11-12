@@ -51,17 +51,6 @@ python key_creation.py
 To obtain an OpenAI Key, you need to create an account on the official Open AI website and generate an API Key.
 
 
-6. Features
-
-- [x] Create a user account
-- [x] Login a user
-- [x] Create user folders
-- [X] Upload documents in folders
-- [X] Chat with a custom assistant based on the user documents
-- [X] Chat with a generic assistant to help coding
-- [X] Add personnal informations in SQL database
-
-
 ## Initializing the database
 
 
@@ -79,6 +68,18 @@ To run the application, use the following command:
 ```
 flask run
 ```
+
+
+## Features
+
+- Create a user account
+- Login a user
+- Create user folders
+- Upload documents in folders
+- Chat with a custom assistant based on the user documents
+- Chat with a generic assistant to help coding
+- Add personnal informations in SQL database
+
 
 
 ## Contribution
