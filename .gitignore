@@ -1,5 +1,5 @@
-## app specific folder
 /data/
+/migrations
 
 .DS_Store
 .env
