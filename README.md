@@ -1,22 +1,28 @@
-# AI-Assisted Document Management System
+# Personal AI
 
-**Description**: The AI-Assisted Document Management System is a Flask-based web application that empowers users to create folders, upload documents, and engage in conversations with an AI assistant that possesses knowledge about the stored information.
+
+**Description**: "Personal IA" is a Flask-based web application designed to enhance daily life. Users can effortlessly create folders, upload documents, input health-related information, track expenses and income for a monthly budget overview, and engage in conversations with an AI assistant that possesses knowledge about the stored information. Experience seamless organization and assistance in various aspects of your everyday life.
+
 
 ## Installation
 
+
 To get started, you will need Python3 installed: https://www.python.org/downloads/ 
-(Dont' forget to choose "Add python.exe" to PATH at the begininng of the installation on Windows).
-If you don't have any Relational Database Management System, you can install Postgres Database and PgAdmin here : https://www.postgresql.org/download/windows/ 
+(Don't forget to choose "Add python.exe" to PATH at the begining of the installation on Windows).
+If you don't have any Relational Database Management System, you can install PostgreSQL and PgAdmin here : https://www.postgresql.org/download/windows/ 
+
 
 1. Create a Virtual Environment: 
 ```
 python -m venv venv
 ```
 
+
 2. Activate the Virtual Environment:
 ```
 venv/Scripts/activate 
 ```
+
 
 3. Install Dependencies from requirements.txt:
 
@@ -24,13 +30,28 @@ venv/Scripts/activate
 pip install -r requirements.txt
 ```
 
+
 4. Create a folder named 'data' at the root of the project.
-
-5. Create a file named '.env' at the root of the project.
-
-IN PROGRESS ...
+When a user registers, a user folder with their UUID will be created in the 'data' folder, where it will store their documents.
 
 
+5. Create a file named '.env' at the root of the project and add the global variables:
+```
+OPENAI_API_KEY="your_open_ai_api_key"
+
+SECRET_KEY=your_flak_secret_key
+
+SQLALCHEMY_DATABASE_URI=your_database_connection_string
+SQLALCHEMY_TRACK_MODIFICATIONS=False
+```
+To create your Flask secret key you can execute: 
+```
+python key_creation.py
+```
+To obtain an OpenAI Key, you need to create an account on the official Open AI website and generate an API Key.
+
+
+6. Features
 
 - [x] Create a user account
 - [x] Login a user
@@ -41,62 +62,41 @@ IN PROGRESS ...
 - [X] Add personnal informations in SQL database
 
 
-## Installation
+## Initializing the database
 
-### Updating python3 and pip3
-```
-brew update
-brew upgrade python3
-pip3 install --upgrade pip
-```
-
-### Creating a virtual environment
-```
-python3 -m venv personal_ai_env
-source personal_ai_env/bin/activate
-
-python3 --version 
-Python 3.9.7
-
-pip3 --version
-pip 21.2.4 
-```
-
-### Installing dependencies
-```
-pip3 install -r requirements.txt
-```
-
-en cas d'installation d'un nouveau package : 
 
 ```
-pip3 freeze > requirements.txt
-```
-
-### Installing postgresql
-
-```
-brew install postgresql 
-brew services start postgresql
-
+flask db init  # initialize the migration folder
+flask db migrate -m "Initial migration."  # Create the first migration file
+flask db upgrade  # Execute the migration
 ```
 
 
+## Running the Application
+To run the application, use the following command:
 
-### Initializing the database
 
 ```
-flask db init  # Initialise le dossier des migrations
-flask db migrate -m "Initial migration."  # Crée la première migration
-flask db upgrade  # Applique la migration et crée la base de données
+flask run
 ```
 
-#### Gestion des migrations
 
-À chaque fois que vous apportez des modifications à vos modèles, vous devrez créer une nouvelle migration et l'appliquer :
-```
-flask db migrate -m "Description of the changes."
-flask db upgrade
-```
-À ce stade, votre base de données devrait être initialisée. Si vous utilisez SQLite, vous devriez voir un fichier site.db (ou tout autre nom que vous avez choisi) dans le répertoire racine de votre projet.
+## Contribution
+We welcome contributions from fellow developers to enhance "Personal IA." If you're interested in contributing, follow these steps:
+
+
+Fork the repository.
+Create a new branch for your feature or bug fix: git checkout -b feature-name.
+Make your changes and commit them: git commit -m 'Description of the changes'.
+Push your changes to your fork: git push origin feature-name.
+Open a pull request, detailing the changes you made and why they're valuable.
+For bug reports, feature requests, or other issues, please utilize the GitHub issue tracker. We appreciate your efforts to make "Personal IA" even better!
+
+
+## License
+This project is released under the MIT License, allowing for flexibility in its use, modification, and distribution..
+
+
+### Authors
+The primary contributor to this project is Pierre Untas.
 
