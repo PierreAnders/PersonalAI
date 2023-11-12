@@ -1,10 +1,44 @@
-# Personal AI
+# AI-Assisted Document Management System
 
-This app is a personal AI assistant API that can do the following:
+**Description**: The AI-Assisted Document Management System is a Flask-based web application that empowers users to create folders, upload documents, and engage in conversations with an AI assistant that possesses knowledge about the stored information.
+
+## Installation
+
+To get started, you will need Python3 installed: https://www.python.org/downloads/ 
+(Dont' forget to choose "Add python.exe" to PATH at the begininng of the installation on Windows).
+If you don't have any Relational Database Management System, you can install Postgres Database and PgAdmin here : https://www.postgresql.org/download/windows/ 
+
+1. Create a Virtual Environment: 
+```
+python -m venv venv
+```
+
+2. Activate the Virtual Environment:
+```
+venv/Scripts/activate 
+```
+
+3. Install Dependencies from requirements.txt:
+
+```
+pip install -r requirements.txt
+```
+
+4. Create a folder named 'data' at the root of the project.
+
+5. Create a file named '.env' at the root of the project.
+
+IN PROGRESS ...
+
+
 
 - [x] Create a user account
 - [x] Login a user
-- [x] ...
+- [x] Create user folders
+- [X] Upload documents in folders
+- [X] Chat with a custom assistant based on the user documents
+- [X] Chat with a generic assistant to help coding
+- [X] Add personnal informations in SQL database
 
 
 ## Installation
