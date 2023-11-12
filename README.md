@@ -56,6 +56,27 @@ To obtain an OpenAI Key, you need to create an account on the official Open AI w
 
 ```
 flask db init  # initialize the migration folder
+```
+You will now see an 'Migrations' folder. Inside, in the 'env.py', add this code:
+
+```
+from app.users.model import User
+from app.expenses.model import Expense
+from app.incomes.model import Income
+from app.healths.model import Health
+from app.folders.model import Folder
+from app.files.model import File
+
+target_metadata = User.metadata
+target_metadata = Expense.metadata
+target_metadata = Income.metadata
+target_metadata = Health.metadata
+target_metadata = Folder.metadata
+target_metadata = File.metadata
+```
+
+You can know make the migration:
+```
 flask db migrate -m "Initial migration."  # Create the first migration file
 flask db upgrade  # Execute the migration
 ```
