@@ -1,4 +1,3 @@
-# Architecture criant
 from flask import Flask
 
 from config import Config
@@ -8,14 +7,14 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # Initialize Flask extensions here
+    # Initialisation des extensions
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
     cors.init_app(app)
     jwt.init_app(app)
 
-    # Register blueprints here
+    # Enregistrement des blueprints
     from app.files import bp as files_bp
     app.register_blueprint(files_bp)
 
