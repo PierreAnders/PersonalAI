@@ -13,20 +13,20 @@ If you don't have any Relational Database Management System, you can install Pos
 
 
 1. Create a Virtual Environment: 
-```
+```python
 python -m venv venv
 ```
 
 
 2. Activate the Virtual Environment:
-```
+```python
 venv/Scripts/activate 
 ```
 
 
 3. Install Dependencies from `requirements.txt`:
 
-```
+```python
 pip install -r requirements.txt
 ```
 
@@ -36,7 +36,7 @@ When a user registers, a user folder with their UUID will be created in the `dat
 
 
 5. Create a file named `.env` at the root of the project and add the global variables:
-```
+```python
 OPENAI_API_KEY="your_open_ai_api_key"
 
 SECRET_KEY=your_flak_secret_key
@@ -45,7 +45,7 @@ SQLALCHEMY_DATABASE_URI=your_database_connection_string
 SQLALCHEMY_TRACK_MODIFICATIONS=False
 ```
 To create your Flask secret key you can execute: 
-```
+```python
 python key_creation.py
 ```
 To obtain an OpenAI Key, you need to create an account on the official Open AI website and generate an API Key.
@@ -54,12 +54,12 @@ To obtain an OpenAI Key, you need to create an account on the official Open AI w
 ## Initializing the database
 
 
-```
+```python
 flask db init  # initialize the migration folder
 ```
 You will now see an `Migrations` folder. Inside, in the `env.py`, add this code:
 
-```
+```python
 from app.users.model import User
 from app.expenses.model import Expense
 from app.incomes.model import Income
@@ -76,7 +76,7 @@ target_metadata = File.metadata
 ```
 
 You can know make the migration:
-```
+```python
 flask db migrate -m "Initial migration."  # Create the first migration file
 flask db upgrade  # Execute the migration
 ```
@@ -86,7 +86,7 @@ flask db upgrade  # Execute the migration
 To run the application, use the following command:
 
 
-```
+```python
 flask run
 ```
 
