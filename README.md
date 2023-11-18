@@ -59,7 +59,7 @@ flask db init  # initialize the migration folder
 ```
 You will now see an `Migrations` folder. Inside, in the `env.py`, add this code:
 
-```
+``` python
 from app.users.model import User
 from app.expenses.model import Expense
 from app.incomes.model import Income
