@@ -31,11 +31,11 @@ pip install -r requirements.txt
 ```
 
 
-4. Create a folder named 'data' at the root of the project.
-When a user registers, a user folder with their UUID will be created in the 'data' folder, where it will store their documents.
+4. Create a folder named `data` at the root of the project.
+When a user registers, a user folder with their UUID will be created in the `data` folder, where it will store their documents.
 
 
-5. Create a file named '.env' at the root of the project and add the global variables:
+5. Create a file named `.env` at the root of the project and add the global variables:
 ```
 OPENAI_API_KEY="your_open_ai_api_key"
 
@@ -57,7 +57,7 @@ To obtain an OpenAI Key, you need to create an account on the official Open AI w
 ```
 flask db init  # initialize the migration folder
 ```
-You will now see an 'Migrations' folder. Inside, in the 'env.py', add this code:
+You will now see an `Migrations` folder. Inside, in the `env.py`, add this code:
 
 ```
 from app.users.model import User
