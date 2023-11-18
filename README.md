@@ -24,7 +24,7 @@ venv/Scripts/activate
 ```
 
 
-3. Install Dependencies from requirements.txt:
+3. Install Dependencies from `requirements.txt`:
 
 ```
 pip install -r requirements.txt
