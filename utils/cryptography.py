@@ -30,4 +30,4 @@ def decrypt_data(hex_data):
         return decrypted_data
     except binascii.Error as e:
         # Gérer les erreurs lors du décodage du texte hexadécimal
-        print(f"Error decoding hex data: {str(e)}")
+        print(f"Erreur lors du décodage des données hexadécimales: {str(e)}")

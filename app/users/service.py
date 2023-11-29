@@ -46,15 +46,23 @@ def register_user_service(data):
     email = data.get('email')
     password = data.get('password')
 
-    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-    new_user = User(firstname=firstname, lastname=lastname, birth_date=birth_date, email=email, password=hashed_password)
+    try:
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        new_user = User(firstname=firstname, lastname=lastname, birth_date=birth_date, email=email, password=hashed_password)
 
-    db.session.add(new_user)
-    db.session.commit()
+        db.session.add(new_user)
+        db.session.commit()
 
-    create_user_folder(new_user.id)
+        create_user_folder(new_user.id)
 
-    return new_user
+        return new_user
+
+    except IntegrityError as e:
+        db.session.rollback()
+        raise ValueError("Cette adresse e-mail est déjà utilisée.") from e
+    except Exception as e:
+        db.session.rollback()
+        raise ValueError(f"Une erreur s'est produite lors de l'inscription : {str(e)}") from e
 
 
 def login_user_service(data):
