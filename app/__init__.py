@@ -38,6 +38,9 @@ def create_app(config_class=Config):
 
     from app.code import bp as code_bp
     app.register_blueprint(code_bp)
+
+    from app.notes import bp as notes_bp
+    app.register_blueprint(notes_bp)
     
     @app.route('/')
     def index():
