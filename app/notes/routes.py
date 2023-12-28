@@ -14,7 +14,7 @@ def add_note():
         content = data.get('content')
 
         if not title or not content:
-            raise BadRequest("Title and content are required.")
+            raise BadRequest("Le titre et le contenu sont obligatoires.")
 
         user_id = get_jwt_identity()
 
