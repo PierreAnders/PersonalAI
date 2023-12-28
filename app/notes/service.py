@@ -37,7 +37,6 @@ def add_note_service(title, content, user_id):
         file_path = os.path.join(user_subfolder_notes, f'{title}.html')
 
         with open(file_path, 'w', encoding='utf-8') as file:
-            # file.write(f"{title} :\n\n")
             file.write(f"{content}\n")
 
         print(f"Note '{title}' ajoutée avec succès.")
