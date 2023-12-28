@@ -50,7 +50,7 @@ def chat_with_data_service(model, data, folder):
     write_date(user_id)
 
     # Récupération ou création de l'index
-    index = get_or_create_index(user_id, folder)
+    index = get_or_create_index(folder)
     print('index :', index)
 
     # Création la chaîne de conversation
@@ -79,19 +79,32 @@ def chat_with_data_service(model, data, folder):
 
 
 # Récupération ou création de l'index
-def get_or_create_index(user_id, folder):
-    user_data_folder = f'data/{user_id}/{folder}/'
+# def get_or_create_index(user_id, folder):
+#     user_data_folder = f'data/{user_id}/{folder}/'
     
-    # Check if the specified folder exists
-    if not os.path.exists(user_data_folder):
-        print(f"Le dossier spécifié '{user_data_folder}' n'existe pas.")
-        return None
+#     # Check if the specified folder exists
+#     if not os.path.exists(user_data_folder):
+#         print(f"Le dossier spécifié '{user_data_folder}' n'existe pas.")
+#         return None
 
-    # Create a loader for the single specified folder
-    loader = DirectoryLoader(user_data_folder)
+#     # Create a loader for the single specified folder
+#     loader = DirectoryLoader(user_data_folder)
     
-    # Create the index
-    index = VectorstoreIndexCreator().from_loader(loader)
+#     # Create the index
+#     index = VectorstoreIndexCreator().from_loader(loader)
+#     print('index :', index)
+
+    # return index
+
+
+def get_or_create_index(folder):
+   
+    user_id = get_jwt_identity()
+    user_data_folder = f'data/{user_id}/{folder}/'
+  
+    loader = [DirectoryLoader(user_data_folder)]
+
+    index = VectorstoreIndexCreator().from_loaders(loader)
     print('index :', index)
 
     return index
