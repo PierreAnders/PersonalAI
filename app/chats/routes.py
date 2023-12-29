@@ -9,9 +9,9 @@ from langchain.document_loaders import DirectoryLoader
 from app.chats import bp
 from app.chats.service import chat_with_data_service
 
-@bp.route('/chatWithData/<model>', methods=['POST'])
+@bp.route('/chatWithData/<model>/<folder>', methods=['POST'])
 @jwt_required()
-def chat_with_data(model):
+def chat_with_data(model, folder):
     data = request.get_json()
-    result = chat_with_data_service(model, data)
+    result = chat_with_data_service(model, data, folder)
     return jsonify(result)

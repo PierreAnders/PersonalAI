@@ -44,13 +44,13 @@ def write_date(user_id):
         file.write(f"Nous sommes aujourd'hui le {current_date}")
         
 
-def chat_with_data_service(model, data):
+def chat_with_data_service(model, data, folder):
 
     user_id = get_jwt_identity()
     write_date(user_id)
 
     # Récupération ou création de l'index
-    index = get_or_create_index()
+    index = get_or_create_index(folder)
     print('index :', index)
 
     # Création la chaîne de conversation
@@ -79,23 +79,36 @@ def chat_with_data_service(model, data):
 
 
 # Récupération ou création de l'index
-def get_or_create_index():
-    # Création d'un nouvel index à partir des données du dossier de l'utilisateur
+# def get_or_create_index(user_id, folder):
+#     user_data_folder = f'data/{user_id}/{folder}/'
+    
+#     # Check if the specified folder exists
+#     if not os.path.exists(user_data_folder):
+#         print(f"Le dossier spécifié '{user_data_folder}' n'existe pas.")
+#         return None
+
+#     # Create a loader for the single specified folder
+#     loader = DirectoryLoader(user_data_folder)
+    
+#     # Create the index
+#     index = VectorstoreIndexCreator().from_loader(loader)
+#     print('index :', index)
+
+    # return index
+
+
+def get_or_create_index(folder):
+   
     user_id = get_jwt_identity()
-    user_data_folder = f'data/{user_id}/'
-    # "os.scandir(user_data_folder)" parcourt tous les éléments dans le répertoire "user_data_folder"
-    # "if folder.is_dir()" vérifie si l'élément actuellement observé "folder" est un répertoire.
-    # Si "folder" est un répertoire, alors son chemin d'accès est obtenu avec "folder.path".
-    subdirs = [folder.path for folder in os.scandir(user_data_folder) if folder.is_dir()]
-    print('subdirs :', subdirs)
-    # Création d'un chargeur de documents pour chaque sous-répertoire
-    loaders = [DirectoryLoader(subdir) for subdir in subdirs]
-    print ('loaders :', loaders)
-    # Création de l'index
-    index = VectorstoreIndexCreator().from_loaders(loaders)
+    user_data_folder = f'data/{user_id}/{folder}/'
+  
+    loader = [DirectoryLoader(user_data_folder)]
+
+    index = VectorstoreIndexCreator().from_loaders(loader)
     print('index :', index)
 
     return index
+
 
 
 # Création d'une instance de la classe ConversationalRetrievalChain  

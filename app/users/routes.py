@@ -18,8 +18,10 @@ def register():
     try:
         new_user = register_user_service(data)
         return jsonify({'message': 'Inscription réussie'}), 201
-    except IntegrityError as e:
-        return jsonify({"message": "Erreur de base de données : " + str(e)}), 500 
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
+    except Exception as e:
+        return jsonify({"message": f"Erreur de base de données : {str(e)}"}), 500
 
 
 @bp.route('/users/login', methods=['POST'])
