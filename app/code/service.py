@@ -1,53 +1,41 @@
-import os
-import openai
-from dotenv import load_dotenv
+from openai import OpenAI
 
-# chargement des variables d'environnement à partir du fichier .env
-load_dotenv()
+# Initialize the OpenAI client
+client = OpenAI(base_url="http://localhost:1234/v1", api_key="not-needed")
 
-# Définition de la clé d'API de OpenAI
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
-# Initialise un dictionnaire qui va garder l'historique de la conversation pour chaque session
-# Chaque clé dans le dictionnaire représente un identifiant de session et la valeur associée est une liste des messages échangés durant la session
+# Initialize a dictionary to store chat histories for different sessions
 chat_histories = {}
-print("chat_histories", chat_histories)
 
 def chat_service(model, data):
-
-    # Récupération de l'identifiant de session (session_id) et le message de l'utilisateur (query) à partir des données reçues
-    # session_id est utilisé pour associer un historique de chat à chaque session d'utilisateur
     session_id = data.get("session_id")
     query = data.get("query")
 
-    # Vérification si l'historique de chat existe déjà pour la session_id. Si non cela renvoie une liste vide
-    chat_history = chat_histories.get(session_id, [])
-    print('chat_history :', chat_history)
+    # Retrieve the chat history for the current session, or initialize it
+    history = chat_histories.get(session_id, [
+        {"role": "system", "content": "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful."}
+    ])
 
-    # Ajout du nouveau message à l'historique de chat
-    chat_history.append((query, ""))
-    print('chat_history avant append :', chat_history)
+    # Append the new user query to the history
+    history.append({"role": "user", "content": query})
 
-    # Construction de la liste des messages à envoyer à l'API d'OpenAI pour obtenir une réponse
-    # Chaque message est stocké dans un dictionnaire
-    messages = [{"role": "user", "content": msg} for msg, _ in chat_history]
-
-    # Appel à l'API d'OpenAI pour obtenir la réponse
-    # Utilisation du paramètre model en fonction du choix du LLM par l'utilisateur côté fontend
-    response = openai.ChatCompletion.create(
+    # Call the OpenAI API to get the completion
+    completion = client.chat.completions.create(
         model=model,
-        messages=messages)
+        messages=history,
+        temperature=0.7,
+        stream=True,
+    )
 
-    # Extraction de la réponse de l'API
-    assistant_reply = response["choices"][0]["message"]["content"]
+    # Extract the response
+    assistant_reply = ""
+    for chunk in completion:
+        if chunk.choices[0].delta.content:
+            assistant_reply += chunk.choices[0].delta.content
 
-    # Mise à jour du dernier élément de l'historique de chat avec la réponse de l'assistant
-    chat_history[-1] = (query, assistant_reply)
-    print('chat_history[-1] :', chat_history[-1])
+    # Update the history with the assistant's reply
+    history.append({"role": "assistant", "content": assistant_reply})
 
-    # Mise à jour de l'historique de chat pour la session de l'utilisateur dans le dictionnaire chat_histories
-    chat_histories[session_id] = chat_history
-    print('chat_histories[session_id] :', chat_histories[session_id])
+    # Save the updated history back to the chat_histories dictionary
+    chat_histories[session_id] = history
 
-    # Renvoie de la réponse de l'assistant
     return {"answer": assistant_reply}
