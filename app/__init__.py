@@ -2,6 +2,7 @@ from flask import Flask
 
 from config import Config
 from app.extensions import db, bcrypt, migrate, cors, jwt
+from .philips_hue import create_module as philips_hue_module
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -13,6 +14,7 @@ def create_app(config_class=Config):
     bcrypt.init_app(app)
     cors.init_app(app)
     jwt.init_app(app)
+    philips_hue_module(app)
 
     # Enregistrement des blueprints
     from app.files import bp as files_bp
